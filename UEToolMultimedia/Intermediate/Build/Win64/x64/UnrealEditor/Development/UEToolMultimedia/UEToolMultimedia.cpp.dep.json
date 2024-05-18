@@ -1,0 +1,14 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "g:\\universita\\magistrale\\materie\\multimedia\\progetto\\multimediaproject\\uetoolmultimedia\\source\\uetoolmultimedia\\uetoolmultimedia.cpp",
+        "ProvidedModule": "",
+        "PCH": "g:\\universita\\magistrale\\materie\\multimedia\\progetto\\multimediaproject\\uetoolmultimedia\\intermediate\\build\\win64\\x64\\uetoolmultimediaeditor\\development\\engine\\sharedpch.engine.cpp20.h.pch",
+        "Includes": [
+            "g:\\universita\\magistrale\\materie\\multimedia\\progetto\\multimediaproject\\uetoolmultimedia\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\uetoolmultimedia\\definitions.uetoolmultimedia.h",
+            "g:\\universita\\magistrale\\materie\\multimedia\\progetto\\multimediaproject\\uetoolmultimedia\\source\\uetoolmultimedia\\uetoolmultimedia.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

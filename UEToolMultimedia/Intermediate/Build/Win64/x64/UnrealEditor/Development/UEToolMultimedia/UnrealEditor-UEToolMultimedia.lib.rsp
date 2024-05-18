@@ -1,0 +1,12 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-UEToolMultimedia.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"G:\Universita\Magistrale\Materie\Multimedia\Progetto\MultimediaProject\UEToolMultimedia\Intermediate\Build\Win64\x64\UEToolMultimediaEditor\Development\Engine\SharedPCH.Engine.Cpp20.h.obj"
+"G:\Universita\Magistrale\Materie\Multimedia\Progetto\MultimediaProject\UEToolMultimedia\Intermediate\Build\Win64\x64\UnrealEditor\Development\UEToolMultimedia\UEToolMultimedia.cpp.obj"
+"G:\Universita\Magistrale\Materie\Multimedia\Progetto\MultimediaProject\UEToolMultimedia\Intermediate\Build\Win64\x64\UnrealEditor\Development\UEToolMultimedia\Default.rc2.res"
+/OUT:"G:\Universita\Magistrale\Materie\Multimedia\Progetto\MultimediaProject\UEToolMultimedia\Intermediate\Build\Win64\x64\UnrealEditor\Development\UEToolMultimedia\UnrealEditor-UEToolMultimedia.lib"
