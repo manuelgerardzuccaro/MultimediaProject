@@ -1,5 +1,5 @@
 # MultimediaProject
-### Unreal Engine Tool for Video Stabilization and Artifact Removal
+### Python Tool for Video Stabilization and Artifact Removal
 
 This Unreal Engine tool focuses on video stabilization and artifact removal, allowing users to enhance the quality of their videos by eliminating unwanted movements and visual artifacts. The tool aims to make projects look more polished and professional.
 
