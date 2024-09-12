@@ -37,11 +37,18 @@ class ImageRestorationApp(QMainWindow):
         self.layout.addWidget(self.apply_button)
 
         # Slider per la dimensione del filtro
+        slider_layout = QHBoxLayout()  # Layout orizzontale per slider e valore
         self.slider = QSlider(Qt.Horizontal)
-        self.slider.setMinimum(3)
-        self.slider.setMaximum(15)
+        self.slider.setMinimum(1)
+        self.slider.setMaximum(50)
         self.slider.setValue(5)
-        self.layout.addWidget(self.slider)
+        self.slider.valueChanged.connect(self.update_slider_label)  # Aggiorna l'etichetta ad ogni cambiamento di valore
+        slider_layout.addWidget(self.slider)
+
+        # Etichetta per visualizzare il valore corrente dello slider
+        self.slider_label = QLabel(f"Valore: {self.slider.value()}", self)
+        slider_layout.addWidget(self.slider_label)
+        self.layout.addLayout(slider_layout)
 
         # Aree di visualizzazione delle immagini (originale e restaurata)
         self.original_label = QLabel(self)
@@ -92,7 +99,7 @@ class ImageRestorationApp(QMainWindow):
         selected_filter = self.filter_combo.currentText()
 
         if selected_filter == "Filtro Mediano":
-            ksize = self.slider.value() * 2 + 1  # Numero dispari per il filtro mediano
+            ksize = self.slider.value()
             self.applied_filters.append(('Filtro Mediano', ksize))  # Aggiunge il filtro alla lista
         elif selected_filter == "Filtro Media Aritmetica":
             kernel_size = self.slider.value()  # Dimensione del kernel per la media aritmetica
@@ -149,3 +156,7 @@ class ImageRestorationApp(QMainWindow):
         # Converti QImage in QPixmap e visualizza
         pixmap = QPixmap.fromImage(q_img)
         label.setPixmap(pixmap.scaled(label.size(), Qt.KeepAspectRatio))
+
+    def update_slider_label(self):
+        """Aggiorna l'etichetta per mostrare il valore corrente dello slider"""
+        self.slider_label.setText(f"Valore: {self.slider.value()}")
