@@ -1,4 +1,4 @@
-﻿from PyQt5.QtWidgets import QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QHBoxLayout, QComboBox, QSlider, QWidget, QListWidget, QListWidgetItem
+﻿from PyQt5.QtWidgets import QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QHBoxLayout, QComboBox, QSlider, QWidget, QListWidget, QListWidgetItem, QSizePolicy
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 import cv2
@@ -13,7 +13,7 @@ class ImageRestorationApp(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle('Restauro Immagini - Riduzione Rumore')
-        self.setGeometry(100, 100, 1200, 600)
+        self.setGeometry(100, 100, 1600, 900)  # Finestra più grande
 
         # Layout principale verticale
         self.layout = QVBoxLayout()
@@ -36,7 +36,7 @@ class ImageRestorationApp(QMainWindow):
         self.apply_button.clicked.connect(self.apply_filter)
         self.layout.addWidget(self.apply_button)
 
-        # Slider per la dimensione del filtro
+        # Slider per la dimensione del filtro e valore visualizzato
         slider_layout = QHBoxLayout()  # Layout orizzontale per slider e valore
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setMinimum(1)
@@ -54,9 +54,9 @@ class ImageRestorationApp(QMainWindow):
         self.original_label = QLabel(self)
         self.restored_label = QLabel(self)
 
-        # Impostiamo una dimensione fissa più grande per le immagini
-        self.original_label.setFixedSize(500, 400)
-        self.restored_label.setFixedSize(500, 400)
+        # Politiche di ridimensionamento per le immagini
+        self.original_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.restored_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # Aggiungiamo le etichette al layout delle immagini affiancate
         self.image_layout.addWidget(self.original_label)
@@ -67,6 +67,7 @@ class ImageRestorationApp(QMainWindow):
 
         # Lista per i filtri applicati
         self.filter_list = QListWidget(self)
+        self.filter_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.layout.addWidget(self.filter_list)
 
         # Bottone per rimuovere il filtro selezionato
@@ -83,7 +84,11 @@ class ImageRestorationApp(QMainWindow):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self, "Carica Immagine", "", "Image Files (*.png *.jpg *.jpeg)", options=options)
         if fileName:
-            # Carica l'immagine
+            # Prima rimuoviamo le immagini precedenti
+            self.original_label.clear()  # Rimuove l'immagine precedente dall'area originale
+            self.restored_label.clear()  # Rimuove l'immagine precedente dall'area restaurata
+
+            # Carica la nuova immagine
             self.image = cv2.imread(fileName)
 
             # Controlla se l'immagine è stata caricata correttamente
@@ -94,6 +99,9 @@ class ImageRestorationApp(QMainWindow):
             # Convertiamo l'immagine in RGB per la visualizzazione
             image_rgb = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
             self.display_image(image_rgb, self.original_label)
+
+            # Resetta la lista dei filtri quando si carica una nuova immagine
+            self.reset_filters()
 
     def apply_filter(self):
         selected_filter = self.filter_combo.currentText()
@@ -148,14 +156,14 @@ class ImageRestorationApp(QMainWindow):
         self.filter_list.clear()
 
     def display_image(self, image, label):
-        """Visualizza l'immagine su QLabel"""
+        """Visualizza l'immagine su QLabel ridimensionandola alla grandezza della QLabel"""
         height, width, channel = image.shape
         bytes_per_line = 3 * width
         q_img = QImage(image.data, width, height, bytes_per_line, QImage.Format_RGB888)
 
-        # Converti QImage in QPixmap e visualizza
+        # Ridimensiona l'immagine per adattarla all'etichetta mantenendo il rapporto d'aspetto
         pixmap = QPixmap.fromImage(q_img)
-        label.setPixmap(pixmap.scaled(label.size(), Qt.KeepAspectRatio))
+        label.setPixmap(pixmap.scaled(label.width(), label.height(), Qt.KeepAspectRatio))
 
     def update_slider_label(self):
         """Aggiorna l'etichetta per mostrare il valore corrente dello slider"""
