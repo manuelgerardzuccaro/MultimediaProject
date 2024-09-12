@@ -13,6 +13,30 @@ class ImageRestorationApp(QMainWindow):
         self.applied_filters = []  # Lista per memorizzare i filtri applicati
 
     def initUI(self):
+        # Imposta il font globale tramite fogli di stile
+        self.setStyleSheet("""
+            QMenuBar {
+                font-size: 18px;
+            }
+            QMenu {
+                font-size: 18px;
+            }
+            QLabel {
+                font-size: 20px;
+            }
+            QPushButton {
+                font-size: 18px;
+            }
+            QComboBox {
+                font-size: 18px;
+            }
+            QListWidget {
+                font-size: 18px;
+            }
+            QSlider {
+                font-size: 18px;
+            }
+        """)
         # Ottieni la risoluzione dello schermo
         screen_resolution = QApplication.desktop().screenGeometry()
         screen_width, screen_height = screen_resolution.width(), screen_resolution.height()
@@ -90,9 +114,17 @@ class ImageRestorationApp(QMainWindow):
         # --- Sezione inferiore con la lista dei filtri applicati ---
         self.filter_list = QListWidget(self)
         self.filter_list.setFont(large_font)
+
+        # Imposta l'altezza massima della lista dei filtri applicati
+        self.filter_list.setMaximumHeight(350)  # Imposta una dimensione massima per la lista
+
+        # Imposta una politica di ridimensionamento espansiva
         self.filter_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Aggiungi la lista al layout principale
         main_layout.addWidget(self.filter_list)
 
+        # Widget principale
         container = QWidget()
         container.setLayout(main_layout)
         self.setCentralWidget(container)
