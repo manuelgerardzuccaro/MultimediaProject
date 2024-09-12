@@ -1,6 +1,6 @@
-﻿from PyQt5.QtWidgets import QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QHBoxLayout, QComboBox, QSlider, QWidget, QListWidget, QListWidgetItem, QSizePolicy
-from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtCore import Qt
+﻿from PyQt5.QtWidgets import QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QHBoxLayout, QComboBox, QSlider, QWidget, QListWidget, QSizePolicy, QSpacerItem
+from PyQt5.QtGui import QPixmap, QImage, QFont, QIcon
+from PyQt5.QtCore import Qt, QSize
 import cv2
 import numpy as np
 from filters import median_filter, mean_filter  # Importa i filtri dal file filters.py
@@ -21,18 +21,28 @@ class ImageRestorationApp(QMainWindow):
         # Layout orizzontale per le immagini
         self.image_layout = QHBoxLayout()
 
-        # Bottone per il caricamento dell'immagine
+        # Font personalizzato per aumentare la dimensione del testo
+        large_font = QFont("Arial", 12)  # Font size increased
+
+        # Bottone per il caricamento dell'immagine con icona
         self.load_button = QPushButton('Carica Immagine', self)
+        self.load_button.setFont(large_font)
+        self.load_button.setIcon(QIcon('load_icon.png'))  # Assumi che tu abbia un'icona chiamata load_icon.png
+        self.load_button.setIconSize(QSize(32, 32))
         self.load_button.clicked.connect(self.load_image)
         self.layout.addWidget(self.load_button)
 
         # Menu a tendina per la selezione del filtro
         self.filter_combo = QComboBox(self)
+        self.filter_combo.setFont(large_font)
         self.filter_combo.addItems(["Filtro Mediano", "Filtro Media Aritmetica"])
         self.layout.addWidget(self.filter_combo)
 
-        # Bottone per applicare il filtro
+        # Bottone per applicare il filtro con icona
         self.apply_button = QPushButton('Applica Filtro', self)
+        self.apply_button.setFont(large_font)
+        self.apply_button.setIcon(QIcon('apply_icon.png'))  # Assumi che tu abbia un'icona chiamata apply_icon.png
+        self.apply_button.setIconSize(QSize(32, 32))
         self.apply_button.clicked.connect(self.apply_filter)
         self.layout.addWidget(self.apply_button)
 
@@ -47,6 +57,7 @@ class ImageRestorationApp(QMainWindow):
 
         # Etichetta per visualizzare il valore corrente dello slider
         self.slider_label = QLabel(f"Valore: {self.slider.value()}", self)
+        self.slider_label.setFont(large_font)
         slider_layout.addWidget(self.slider_label)
         self.layout.addLayout(slider_layout)
 
@@ -65,13 +76,20 @@ class ImageRestorationApp(QMainWindow):
         # Aggiungiamo il layout delle immagini al layout principale
         self.layout.addLayout(self.image_layout)
 
+        # Spaziatore per migliorare l'estetica
+        self.layout.addSpacerItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
         # Lista per i filtri applicati
         self.filter_list = QListWidget(self)
+        self.filter_list.setFont(large_font)
         self.filter_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.layout.addWidget(self.filter_list)
 
-        # Bottone per rimuovere il filtro selezionato
+        # Bottone per rimuovere il filtro selezionato con icona
         self.remove_button = QPushButton('Rimuovi Filtro Selezionato', self)
+        self.remove_button.setFont(large_font)
+        self.remove_button.setIcon(QIcon('remove_icon.png'))  # Assumi che tu abbia un'icona chiamata remove_icon.png
+        self.remove_button.setIconSize(QSize(32, 32))
         self.remove_button.clicked.connect(self.remove_filter)
         self.layout.addWidget(self.remove_button)
 
