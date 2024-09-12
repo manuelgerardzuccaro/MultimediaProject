@@ -3,6 +3,7 @@
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt, QSize
 from filter_item_widget import FilterItemWidget
+from filter_worker import FilterWorker
 from filters import median_filter, mean_filter
 from image_manager import load_image, convert_to_rgb, display_image
 
@@ -10,7 +11,9 @@ class ImageRestorationApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
-        self.applied_filters = []  # Lista per memorizzare i filtri applicati
+        self.applied_filters = []  # Lista dei filtri applicati
+        self.undo_stack = []  # Stack per gestire le operazioni di undo
+        self.redo_stack = []  # Stack per gestire le operazioni di redo
 
     def initUI(self):
         # Imposta il font globale tramite fogli di stile
@@ -74,6 +77,20 @@ class ImageRestorationApp(QMainWindow):
 
         main_layout.addLayout(controls_layout)
 
+        # Bottone Undo
+        self.undo_button = QPushButton('Undo', self)
+        self.undo_button.setFont(large_font)
+        self.undo_button.clicked.connect(self.undo_filter)
+
+        controls_layout.addWidget(self.undo_button)
+
+        # Bottone Redo
+        self.redo_button = QPushButton('Redo', self)
+        self.redo_button.setFont(large_font)
+        self.redo_button.clicked.connect(self.redo_filter)
+
+        controls_layout.addWidget(self.redo_button)
+
         # --- Sezione centrale con le immagini disposte in orizzontale ---
         image_layout = QHBoxLayout()
 
@@ -134,6 +151,30 @@ class ImageRestorationApp(QMainWindow):
             }
         """)
 
+    def undo_filter(self):
+        if not self.applied_filters:
+            return  # Nessun filtro da annullare
+
+        # Sposta l'ultimo filtro nello stack di redo
+        last_filter = self.applied_filters.pop()
+        self.undo_stack.append(last_filter)
+
+        # Applica nuovamente tutti i filtri rimanenti
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def redo_filter(self):
+        if not self.undo_stack:
+            return  # Nessun filtro da ripristinare
+
+        # Ripristina l'ultimo filtro dallo stack di undo
+        last_undo = self.undo_stack.pop()
+        self.applied_filters.append(last_undo)
+
+        # Aggiorna la lista e riapplica i filtri
+        self.update_filter_list()
+        self.apply_all_filters()
+
     def load_image(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self, "Carica Immagine", "", "Image Files (*.png *.jpg *.jpeg)", options=options)
@@ -165,16 +206,18 @@ class ImageRestorationApp(QMainWindow):
         self.apply_all_filters()
 
     def apply_all_filters(self):
-        temp_image = self.image.copy()
+        if hasattr(self, 'worker'):
+            self.worker.terminate()  # Termina eventuali thread precedenti
 
-        for filter_name, param in self.applied_filters:
-            if filter_name == "Filtro Mediano":
-                temp_image = median_filter(temp_image, param)
-            elif filter_name == "Filtro Media Aritmetica":
-                temp_image = mean_filter(temp_image, param)
-
-        image_rgb = convert_to_rgb(temp_image)
+        # Crea un nuovo worker e collega il segnale
+        self.worker = FilterWorker(self.image, self.applied_filters)
+        self.worker.filter_applied.connect(self.on_filter_applied)
+        self.worker.start()
+    
+    def on_filter_applied(self, result_image):
+        image_rgb = convert_to_rgb(result_image)
         display_image(image_rgb, self.restored_label)
+
 
     def update_filter_list(self):
         self.filter_list.clear()
