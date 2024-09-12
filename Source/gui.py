@@ -14,29 +14,8 @@ class ImageRestorationApp(QMainWindow):
 
     def initUI(self):
         # Imposta il font globale tramite fogli di stile
-        self.setStyleSheet("""
-            QMenuBar {
-                font-size: 18px;
-            }
-            QMenu {
-                font-size: 18px;
-            }
-            QLabel {
-                font-size: 20px;
-            }
-            QPushButton {
-                font-size: 18px;
-            }
-            QComboBox {
-                font-size: 18px;
-            }
-            QListWidget {
-                font-size: 18px;
-            }
-            QSlider {
-                font-size: 18px;
-            }
-        """)
+        self.setup_stylesheet()
+
         # Ottieni la risoluzione dello schermo
         screen_resolution = QApplication.desktop().screenGeometry()
         screen_width, screen_height = screen_resolution.width(), screen_resolution.height()
@@ -128,6 +107,32 @@ class ImageRestorationApp(QMainWindow):
         container = QWidget()
         container.setLayout(main_layout)
         self.setCentralWidget(container)
+
+    def setup_stylesheet(self):
+        """Imposta il foglio di stile dell'interfaccia"""
+        self.setStyleSheet("""
+            QMenuBar {
+                font-size: 18px;
+            }
+            QMenu {
+                font-size: 18px;
+            }
+            QLabel {
+                font-size: 20px;
+            }
+            QPushButton {
+                font-size: 18px;
+            }
+            QComboBox {
+                font-size: 18px;
+            }
+            QListWidget {
+                font-size: 18px;
+            }
+            QSlider {
+                font-size: 18px;
+            }
+        """)
 
     def load_image(self):
         options = QFileDialog.Options()
