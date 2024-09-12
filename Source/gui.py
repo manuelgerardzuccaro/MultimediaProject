@@ -1,4 +1,4 @@
-﻿from PyQt5.QtWidgets import QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QHBoxLayout, QComboBox, QSlider, QWidget
+﻿from PyQt5.QtWidgets import QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QHBoxLayout, QComboBox, QSlider, QWidget, QListWidget, QListWidgetItem
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 import cv2
@@ -9,10 +9,11 @@ class ImageRestorationApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.applied_filters = []  # Lista per memorizzare i filtri applicati
 
     def initUI(self):
         self.setWindowTitle('Restauro Immagini - Riduzione Rumore')
-        self.setGeometry(100, 100, 1200, 600)  # Impostiamo una finestra più grande
+        self.setGeometry(100, 100, 1200, 600)
 
         # Layout principale verticale
         self.layout = QVBoxLayout()
@@ -57,6 +58,15 @@ class ImageRestorationApp(QMainWindow):
         # Aggiungiamo il layout delle immagini al layout principale
         self.layout.addLayout(self.image_layout)
 
+        # Lista per i filtri applicati
+        self.filter_list = QListWidget(self)
+        self.layout.addWidget(self.filter_list)
+
+        # Bottone per rimuovere il filtro selezionato
+        self.remove_button = QPushButton('Rimuovi Filtro Selezionato', self)
+        self.remove_button.clicked.connect(self.remove_filter)
+        self.layout.addWidget(self.remove_button)
+
         # Widget principale
         container = QWidget()
         container.setLayout(self.layout)
@@ -83,22 +93,55 @@ class ImageRestorationApp(QMainWindow):
 
         if selected_filter == "Filtro Mediano":
             ksize = self.slider.value() * 2 + 1  # Numero dispari per il filtro mediano
-            self.restored_image = median_filter(self.image, ksize)
-
+            self.applied_filters.append(('Filtro Mediano', ksize))  # Aggiunge il filtro alla lista
         elif selected_filter == "Filtro Media Aritmetica":
             kernel_size = self.slider.value()  # Dimensione del kernel per la media aritmetica
-            self.restored_image = mean_filter(self.image, kernel_size)  # Applica il filtro di media aritmetica
+            self.applied_filters.append(('Filtro Media Aritmetica', kernel_size))  # Aggiunge il filtro alla lista
 
-        # Verifica che self.restored_image sia stato definito prima di convertire
-        if self.restored_image is not None:
-            # Converti l'immagine restaurata da BGR a RGB prima della visualizzazione
-            image_rgb = cv2.cvtColor(self.restored_image, cv2.COLOR_BGR2RGB)
-            self.display_image(image_rgb, self.restored_label)
-        else:
-            print("Errore: il filtro non è stato applicato correttamente.")
+        self.update_filter_list()  # Aggiorna la lista visibile dei filtri
+        self.apply_all_filters()  # Applica tutti i filtri e aggiorna l'immagine
+
+    def apply_all_filters(self):
+        """Applica tutti i filtri sulla base dell'immagine originale"""
+        temp_image = self.image.copy()  # Copia dell'immagine originale
+
+        for filter_name, param in self.applied_filters:
+            if filter_name == "Filtro Mediano":
+                temp_image = median_filter(temp_image, param)
+            elif filter_name == "Filtro Media Aritmetica":
+                temp_image = mean_filter(temp_image, param)
+
+        # Visualizza l'immagine filtrata
+        image_rgb = cv2.cvtColor(temp_image, cv2.COLOR_BGR2RGB)
+        self.display_image(image_rgb, self.restored_label)
+
+    def update_filter_list(self):
+        """Aggiorna la lista visualizzata dei filtri applicati"""
+        self.filter_list.clear()
+        for filter_name, param in self.applied_filters:
+            self.filter_list.addItem(f"{filter_name} (parametro: {param})")
+
+    def remove_filter(self):
+        """Rimuove il filtro selezionato dalla lista"""
+        selected_items = self.filter_list.selectedItems()
+        if not selected_items:
+            return
+
+        # Rimuove il filtro selezionato dalla lista interna
+        for item in selected_items:
+            row = self.filter_list.row(item)
+            self.applied_filters.pop(row)
+
+        self.update_filter_list()  # Aggiorna la lista visuale
+        self.apply_all_filters()  # Riapplica i filtri rimasti
+
+    def reset_filters(self):
+        """Resetta la lista dei filtri applicati"""
+        self.applied_filters = []
+        self.filter_list.clear()
 
     def display_image(self, image, label):
-        # Converti l'immagine in QImage
+        """Visualizza l'immagine su QLabel"""
         height, width, channel = image.shape
         bytes_per_line = 3 * width
         q_img = QImage(image.data, width, height, bytes_per_line, QImage.Format_RGB888)
