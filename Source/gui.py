@@ -5,7 +5,8 @@ from PyQt5.QtCore import Qt, QSize
 from filter_item_widget import FilterItemWidget
 from filter_worker import FilterWorker
 from utils import save_filter_configuration, load_filter_configuration, save_image
-from image_manager import load_image, convert_to_rgb, display_image
+from image_manager import load_image, convert_to_rgb, display_image, show_image_fullscreen, show_image_zoomed
+
 
 class ImageRestorationApp(QMainWindow):
     def __init__(self):
@@ -138,6 +139,11 @@ class ImageRestorationApp(QMainWindow):
         container = QWidget()
         container.setLayout(main_layout)
         self.setCentralWidget(container)
+
+        # Aggiungiamo un evento click per l'immagine originale
+        self.original_label.mousePressEvent = self.show_original_image_fullscreen
+        # Aggiungiamo un evento click per l'immagine restaurata
+        self.restored_label.mousePressEvent = self.show_restored_image_fullscreen
 
     def setup_stylesheet(self):
         """Imposta il foglio di stile dell'interfaccia"""
@@ -312,7 +318,7 @@ class ImageRestorationApp(QMainWindow):
         self.filter_combo.setEnabled(False)
         self.slider.setEnabled(False)
         self.menuBar().setEnabled(False)  # Disabilita il menu
-    
+
     def enable_controls(self):
         """Riabilita tutti i controlli dopo l'elaborazione dell'immagine"""
         self.apply_button.setEnabled(True)
@@ -321,3 +327,15 @@ class ImageRestorationApp(QMainWindow):
         self.filter_combo.setEnabled(True)
         self.slider.setEnabled(True)
         self.menuBar().setEnabled(True)  # Riabilita il menu
+
+    def show_original_image_fullscreen(self, event):
+        """Mostra l'immagine originale ingrandita se cliccata"""
+        if hasattr(self, 'image'):
+            image_rgb = convert_to_rgb(self.image)  # Convertiamo l'immagine in RGB per PyQt
+            show_image_zoomed(image_rgb)
+
+    def show_restored_image_fullscreen(self, event):
+        """Mostra l'immagine restaurata ingrandita se cliccata"""
+        if hasattr(self, 'restored_image'):
+            image_rgb = convert_to_rgb(self.restored_image)
+            show_image_zoomed(image_rgb)
