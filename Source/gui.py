@@ -4,7 +4,7 @@ from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt, QSize
 from filter_item_widget import FilterItemWidget
 from filter_worker import FilterWorker
-from filters import median_filter, mean_filter
+from utils import save_filter_configuration, load_filter_configuration, save_image
 from image_manager import load_image, convert_to_rgb, display_image
 
 class ImageRestorationApp(QMainWindow):
@@ -34,8 +34,20 @@ class ImageRestorationApp(QMainWindow):
         file_menu = menubar.addMenu('File')
 
         # Aggiungi azione "Carica Immagine" nel menu
-        load_action = QAction('Carica Immagine', self)
+        load_action = QAction('Carica immagine', self)
         load_action.triggered.connect(self.load_image)
+        file_menu.addAction(load_action)
+
+        save_image_action = QAction('Salva immagine', self)
+        save_image_action.triggered.connect(self.save_restored_image)
+        file_menu.addAction(save_image_action)
+
+        save_action = QAction('Salva configurazione filtri', self)
+        save_action.triggered.connect(self.save_filter_configuration_action)
+        file_menu.addAction(save_action)
+
+        load_action = QAction('Carica configurazione filtri', self)
+        load_action.triggered.connect(self.load_filter_configuration_action)
         file_menu.addAction(load_action)
 
         # Layout principale verticale
@@ -192,6 +204,47 @@ class ImageRestorationApp(QMainWindow):
                 # Resetta la lista dei filtri quando si carica una nuova immagine
                 self.reset_filters()
 
+    def save_restored_image(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getSaveFileName(
+            self,
+            "Salva Immagine Restaurata",
+            "SavedImages/",  # Cartella predefinita
+            "Image Files (*.png *.jpg *.jpeg)",
+            options=options
+        )
+        if fileName:
+            save_image(self.restored_image, fileName)  # Funzione save_image già presente in utils
+
+
+    def save_filter_configuration_action(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getSaveFileName(
+            self,
+            "Salva Configurazione Filtri",
+            "FilterConfig/",  # Cartella predefinita
+            "JSON Files (*.json)",
+            options=options
+        )
+        if fileName:
+            save_filter_configuration(self.applied_filters, fileName)
+
+    def load_filter_configuration_action(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getOpenFileName(
+            self,
+            "Carica Configurazione Filtri",
+            "FilterConfig/",  # Cartella predefinita
+            "JSON Files (*.json)",
+            options=options
+        )
+        if fileName:
+            filters = load_filter_configuration(fileName)
+            if filters is not None:
+                self.applied_filters = filters
+                self.update_filter_list()
+                self.apply_all_filters()
+
     def apply_filter(self):
         selected_filter = self.filter_combo.currentText()
 
@@ -213,8 +266,9 @@ class ImageRestorationApp(QMainWindow):
         self.worker = FilterWorker(self.image, self.applied_filters)
         self.worker.filter_applied.connect(self.on_filter_applied)
         self.worker.start()
-    
+
     def on_filter_applied(self, result_image):
+        self.restored_image = result_image  # Salva l'immagine restaurata
         image_rgb = convert_to_rgb(result_image)
         display_image(image_rgb, self.restored_label)
 
