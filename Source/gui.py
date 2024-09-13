@@ -261,8 +261,12 @@ class ImageRestorationApp(QMainWindow):
         self.apply_all_filters()
 
     def apply_all_filters(self):
-        if hasattr(self, 'worker'):
-            self.worker.terminate()  # Termina eventuali thread precedenti
+        if hasattr(self, 'worker') and self.worker.isRunning():
+            self.worker.stop()
+            self.worker.wait()
+
+        # Disabilita i controlli durante l'elaborazione
+        self.disable_controls()
 
         # Crea un nuovo worker e collega il segnale
         self.worker = FilterWorker(self.image, self.applied_filters)
@@ -270,9 +274,12 @@ class ImageRestorationApp(QMainWindow):
         self.worker.start()
 
     def on_filter_applied(self, result_image):
-        self.restored_image = result_image  # Salva l'immagine restaurata
+        self.restored_image = result_image
         image_rgb = convert_to_rgb(result_image)
         display_image(image_rgb, self.restored_label)
+
+        # Riabilita i controlli dopo l'elaborazione
+        self.enable_controls()
 
 
     def update_filter_list(self):
@@ -296,3 +303,21 @@ class ImageRestorationApp(QMainWindow):
 
     def update_slider_label(self):
         self.slider_label.setText(f"Valore: {self.slider.value()}")
+
+    def disable_controls(self):
+        """Disabilita tutti i controlli durante l'elaborazione dell'immagine"""
+        self.apply_button.setEnabled(False)
+        self.undo_button.setEnabled(False)
+        self.redo_button.setEnabled(False)
+        self.filter_combo.setEnabled(False)
+        self.slider.setEnabled(False)
+        self.menuBar().setEnabled(False)  # Disabilita il menu
+    
+    def enable_controls(self):
+        """Riabilita tutti i controlli dopo l'elaborazione dell'immagine"""
+        self.apply_button.setEnabled(True)
+        self.undo_button.setEnabled(True)
+        self.redo_button.setEnabled(True)
+        self.filter_combo.setEnabled(True)
+        self.slider.setEnabled(True)
+        self.menuBar().setEnabled(True)  # Riabilita il menu
