@@ -10,30 +10,37 @@ from image_manager import load_image, convert_to_rgb, display_image
 class ImageRestorationApp(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.slider = None
+        self.restored_label = None
+        self.original_label = None
+        self.redo_button = None
+        self.undo_button = None
+        self.apply_button = None
+        self.slider_label = None
+        self.filter_list = None
+        self.filter_combo = None
+
         self.initUI()
-        self.applied_filters = []  # Lista dei filtri applicati
-        self.undo_stack = []  # Stack per gestire le operazioni di undo
-        self.redo_stack = []  # Stack per gestire le operazioni di redo
+        self.applied_filters = []  # lista dei filtri applicati
+        self.undo_stack = []  # stack operazioni di undo
+        self.redo_stack = []  # stack operazioni di redo
 
     def initUI(self):
-        # Imposta il font globale tramite fogli di stile
         self.setup_stylesheet()
 
-        # Ottieni la risoluzione dello schermo
         screen_resolution = QApplication.desktop().screenGeometry()
         screen_width, screen_height = screen_resolution.width(), screen_resolution.height()
 
-        # Imposta la finestra a schermo intero e blocca il ridimensionamento
         self.setGeometry(0, 0, screen_width, screen_height)
         self.setFixedSize(screen_width, screen_height)
         self.setWindowTitle('Restauro Immagini - Riduzione Rumore')
         self.showMaximized()
 
-        # Barra dei menu
+        # barra dei menu
         menubar = self.menuBar()
         file_menu = menubar.addMenu('File')
 
-        # Aggiungi azione "Carica Immagine" nel menu
         load_action = QAction('Carica immagine', self)
         load_action.triggered.connect(self.load_image)
         file_menu.addAction(load_action)
@@ -50,20 +57,20 @@ class ImageRestorationApp(QMainWindow):
         load_action.triggered.connect(self.load_filter_configuration_action)
         file_menu.addAction(load_action)
 
-        # Layout principale verticale
+        # layout principale verticale
         main_layout = QVBoxLayout()
 
-        # --- Sezione superiore con i controlli dei filtri ---
+        # --- SEZIONE SUPERIORE ---
         controls_layout = QHBoxLayout()
         large_font = QFont("Arial", 12)
 
-        # Menu a tendina per la selezione del filtro
+        # spinner filtri
         self.filter_combo = QComboBox(self)
         self.filter_combo.setFont(large_font)
         self.filter_combo.addItems(["Filtro Mediano", "Filtro Media Aritmetica"])
         controls_layout.addWidget(self.filter_combo)
 
-        # Slider per la dimensione del filtro
+        # slider dimensione kernel
         slider_layout = QHBoxLayout()
         self.slider = QSlider(Qt.Horizontal)
         self.slider.setMinimum(1)
@@ -72,14 +79,14 @@ class ImageRestorationApp(QMainWindow):
         self.slider.valueChanged.connect(self.update_slider_label)
         slider_layout.addWidget(self.slider)
 
-        # Etichetta per visualizzare il valore corrente dello slider
+        # label dello slider
         self.slider_label = QLabel(f"Valore: {self.slider.value()}", self)
         self.slider_label.setFont(large_font)
         slider_layout.addWidget(self.slider_label)
 
         controls_layout.addLayout(slider_layout)
 
-        # Bottone per applicare il filtro
+        # button per aggiungere un filtro
         self.apply_button = QPushButton('Applica Filtro', self)
         self.apply_button.setFont(large_font)
         self.apply_button.setIcon(QIcon('apply_icon.png'))
@@ -89,21 +96,21 @@ class ImageRestorationApp(QMainWindow):
 
         main_layout.addLayout(controls_layout)
 
-        # Bottone Undo
+        # button Undo
         self.undo_button = QPushButton('Undo', self)
         self.undo_button.setFont(large_font)
         self.undo_button.clicked.connect(self.undo_filter)
 
         controls_layout.addWidget(self.undo_button)
 
-        # Bottone Redo
+        # button Redo
         self.redo_button = QPushButton('Redo', self)
         self.redo_button.setFont(large_font)
         self.redo_button.clicked.connect(self.redo_filter)
 
         controls_layout.addWidget(self.redo_button)
 
-        # --- Sezione centrale con le immagini disposte in orizzontale ---
+        # --- SEZIONE CENTRALE (immagini) ---
         image_layout = QHBoxLayout()
 
         self.original_label = QLabel(self)
@@ -119,17 +126,12 @@ class ImageRestorationApp(QMainWindow):
 
         main_layout.addLayout(image_layout)
 
-        # --- Sezione inferiore con la lista dei filtri applicati ---
+        # --- SEZIONE INFERIORE ---
         self.filter_list = QListWidget(self)
         self.filter_list.setFont(large_font)
-
-        # Imposta l'altezza massima della lista dei filtri applicati
-        self.filter_list.setMaximumHeight(350)  # Imposta una dimensione massima per la lista
-
-        # Imposta una politica di ridimensionamento espansiva
+        self.filter_list.setMaximumHeight(350)
         self.filter_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        # Aggiungi la lista al layout principale
         main_layout.addWidget(self.filter_list)
 
         # Widget principale

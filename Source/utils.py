@@ -8,7 +8,6 @@ def save_image(image, path):
     cv2.imwrite(path, image)
 
 def save_filter_configuration(filters, file_path):
-    """Salva la configurazione dei filtri in un file JSON."""
     try:
         with open(file_path, 'w') as f:
             json.dump(filters, f)
@@ -17,7 +16,6 @@ def save_filter_configuration(filters, file_path):
         print(f"Errore durante il salvataggio della configurazione: {e}")
 
 def load_filter_configuration(file_path):
-    """Carica la configurazione dei filtri da un file JSON."""
     try:
         with open(file_path, 'r') as f:
             filters = json.load(f)

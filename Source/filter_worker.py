@@ -5,7 +5,7 @@ from filters import median_filter, mean_filter
 
 
 class FilterWorker(QThread):
-    filter_applied = pyqtSignal(np.ndarray)  # Segnale emesso al termine
+    filter_applied = pyqtSignal(np.ndarray)
 
     def __init__(self, image, filters):
         super().__init__()

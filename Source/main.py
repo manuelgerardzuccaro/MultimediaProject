@@ -6,7 +6,6 @@ import os
 
 
 def create_directories():
-    """Crea le cartelle 'SavedImages' e 'FilterConfig' se non esistono."""
     directories = ["SavedImages", "FilterConfig"]
     for directory in directories:
         if not os.path.exists(directory):
@@ -21,10 +20,9 @@ if __name__ == "__main__":
     create_directories()
 
     app = QApplication(sys.argv)
-
-    # Imposta un font globale più grande
     app.setFont(QFont("Arial", 14))  # Imposta il font e la dimensione
 
     window = ImageRestorationApp()
     window.show()
+
     sys.exit(app.exec_())

@@ -6,11 +6,9 @@ class FilterItemWidget(QWidget):
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
 
-        # Etichetta con il nome del filtro e il parametro
         self.label = QLabel(f"{filter_name} (parametro: {param})", self)
         self.layout.addWidget(self.label)
 
-        # Pulsante per rimuovere il filtro
         self.remove_button = QPushButton("X", self)
         self.remove_button.setFixedSize(20, 20)
         self.remove_button.clicked.connect(remove_callback)  # Collegare la funzione per rimuovere il filtro
