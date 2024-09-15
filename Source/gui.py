@@ -98,14 +98,14 @@ class ImageRestorationApp(QMainWindow):
         main_layout.addLayout(controls_layout)
 
         # button Undo
-        self.undo_button = QPushButton('Undo', self)
+        self.undo_button = QPushButton('←', self)
         self.undo_button.setFont(large_font)
         self.undo_button.clicked.connect(self.undo_filter)
 
         controls_layout.addWidget(self.undo_button)
 
         # button Redo
-        self.redo_button = QPushButton('Redo', self)
+        self.redo_button = QPushButton('→', self)
         self.redo_button.setFont(large_font)
         self.redo_button.clicked.connect(self.redo_filter)
 
