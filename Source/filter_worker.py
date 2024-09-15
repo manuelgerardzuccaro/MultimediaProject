@@ -5,7 +5,7 @@ from filters import median_filter, mean_filter, shock_filter, homomorphic_filter
 
 
 class FilterWorker(QThread):
-    filter_applied = pyqtSignal(np.ndarray)
+    filter_applied = pyqtSignal(object)
 
     def __init__(self, image, filters):
         super().__init__()
@@ -23,7 +23,7 @@ class FilterWorker(QThread):
             elif filter_name == "Filtro Shock":
                 temp_image = shock_filter(temp_image, param)
             elif filter_name == "Filtro Homomorphic":
-                temp_image = homomorphic_filter(temp_image)
+                temp_image = homomorphic_filter(temp_image, low=param['low'], high=param['high'], cutoff=param['cutoff'])
 
         if self._is_running:  # Verifica se l'operazione è ancora valida
             self.filter_applied.emit(temp_image)

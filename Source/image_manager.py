@@ -3,14 +3,42 @@ from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QApplication
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 
+
 def load_image(fileName):
     image = cv2.imread(fileName)
     if image is None:
         print("Errore: Immagine non caricata correttamente")
     return image
 
+
+def save_image(image, path):
+    """
+    Salva un'immagine OpenCV su disco.
+
+    Args:
+        image: L'immagine che deve essere salvata (in formato OpenCV, cioè un array NumPy).
+        path: Il percorso completo del file (incluso il nome e l'estensione) dove l'immagine verrà salvata.
+    """
+    try:
+        # Verifica che l'immagine sia valida
+        if image is None:
+            print("Errore: Nessuna immagine valida da salvare.")
+            return
+
+        # Salva l'immagine utilizzando cv2.imwrite
+        success = cv2.imwrite(path, image)
+
+        if success:
+            print(f"Immagine salvata correttamente in: {path}")
+        else:
+            print("Errore durante il salvataggio dell'immagine. Controlla il percorso e i permessi.")
+    except Exception as e:
+        print(f"Errore durante il salvataggio dell'immagine: {e}")
+
+
 def convert_to_rgb(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
 
 def display_image(image, label):
     height, width, channel = image.shape
@@ -19,6 +47,7 @@ def display_image(image, label):
 
     pixmap = QPixmap.fromImage(q_img)
     label.setPixmap(pixmap.scaled(label.width(), label.height(), Qt.KeepAspectRatio))
+
 
 def show_image_fullscreen(image):
     dialog = QDialog()
