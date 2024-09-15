@@ -96,4 +96,51 @@ def notch_filter(image, d0, u_k, v_k):
     return np.clip(img_back, 0, 255).astype(np.uint8)
 
 
+def shock_filter(image, iterations=10, dt=0.1):
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convertiamo in grigio
+    gray_image = gray_image.astype(np.float32) / 255.0  # Normalizzazione
+
+    for _ in range(iterations):
+        laplacian = cv2.Laplacian(gray_image, cv2.CV_32F)
+        gradient_x = cv2.Sobel(gray_image, cv2.CV_32F, 1, 0, ksize=3)
+        gradient_y = cv2.Sobel(gray_image, cv2.CV_32F, 0, 1, ksize=3)
+        grad_mag = np.sqrt(gradient_x ** 2 + gradient_y ** 2)
+
+        # Direzione della propagazione dello shock
+        sign_lap = np.sign(laplacian)
+        gray_image += dt * sign_lap * grad_mag
+
+    gray_image = np.clip(gray_image * 255, 0, 255).astype(np.uint8)
+    return cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)  # Converti di nuovo in BGR
+
+
+def homomorphic_filter(image, low=0.5, high=1.5, cutoff=30):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # Convertiamo in grigio
+    image_log = np.log1p(np.array(image, dtype="float") / 255)
+
+    # Trasformata di Fourier
+    dft = np.fft.fft2(image_log)
+    dft_shift = np.fft.fftshift(dft)
+
+    # Costruzione del filtro passa-basso + passa-alto
+    rows, cols = image.shape
+    crow, ccol = rows // 2, cols // 2
+    mask = np.ones((rows, cols), np.float32)
+    for i in range(rows):
+        for j in range(cols):
+            distance = np.sqrt((i - crow) ** 2 + (j - ccol) ** 2)
+            mask[i, j] = high - (high - low) * np.exp(- (distance ** 2) / (2 * (cutoff ** 2)))
+
+    # Applicazione del filtro e ritorno all'immagine spaziale
+    dft_shift_filtered = dft_shift * mask
+    dft_filtered = np.fft.ifftshift(dft_shift_filtered)
+    image_filtered = np.fft.ifft2(dft_filtered)
+    image_filtered = np.real(image_filtered)
+
+    # Conversione finale
+    image_exp = np.expm1(image_filtered)
+    image_exp = np.clip(image_exp, 0, 1)
+    return (image_exp * 255).astype("uint8")
+
+
 # altri filtri...

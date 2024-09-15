@@ -68,7 +68,7 @@ class ImageRestorationApp(QMainWindow):
         # spinner filtri
         self.filter_combo = QComboBox(self)
         self.filter_combo.setFont(large_font)
-        self.filter_combo.addItems(["Filtro Mediano", "Filtro Media Aritmetica"])
+        self.filter_combo.addItems(["Filtro Mediano", "Filtro Media Aritmetica", "Filtro Shock", "Filtro Homomorphic"])
         controls_layout.addWidget(self.filter_combo)
 
         # slider dimensione kernel
@@ -257,11 +257,17 @@ class ImageRestorationApp(QMainWindow):
         selected_filter = self.filter_combo.currentText()
 
         if selected_filter == "Filtro Mediano":
-            ksize = self.slider.value()
+            ksize = self.slider.value()  # Ottieni il valore corrente dello slider
             self.applied_filters.append(('Filtro Mediano', ksize))
         elif selected_filter == "Filtro Media Aritmetica":
             kernel_size = self.slider.value()
             self.applied_filters.append(('Filtro Media Aritmetica', kernel_size))
+        elif selected_filter == "Filtro Shock":
+            iterations = self.slider.value()  # Usa lo slider per impostare il numero di iterazioni
+            self.applied_filters.append(('Filtro Shock', iterations))
+        elif selected_filter == "Filtro Homomorphic":
+            # Non usiamo lo slider per questo filtro, quindi usiamo valori di default o personalizzati
+            self.applied_filters.append(('Filtro Homomorphic', None))
 
         self.update_filter_list()
         self.apply_all_filters()

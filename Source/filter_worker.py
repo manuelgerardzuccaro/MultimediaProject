@@ -1,7 +1,7 @@
 ﻿import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from filters import median_filter, mean_filter
+from filters import median_filter, mean_filter, shock_filter, homomorphic_filter
 
 
 class FilterWorker(QThread):
@@ -16,12 +16,14 @@ class FilterWorker(QThread):
     def run(self):
         temp_image = self.image.copy()
         for filter_name, param in self.filters:
-            if not self._is_running:  # Controlla se il thread deve fermarsi
-                return
             if filter_name == "Filtro Mediano":
                 temp_image = median_filter(temp_image, param)
             elif filter_name == "Filtro Media Aritmetica":
                 temp_image = mean_filter(temp_image, param)
+            elif filter_name == "Filtro Shock":
+                temp_image = shock_filter(temp_image, param)
+            elif filter_name == "Filtro Homomorphic":
+                temp_image = homomorphic_filter(temp_image)
 
         if self._is_running:  # Verifica se l'operazione è ancora valida
             self.filter_applied.emit(temp_image)
