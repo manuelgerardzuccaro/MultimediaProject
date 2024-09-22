@@ -146,32 +146,37 @@ def homomorphic_filter(image, low=0.5, high=1.5, cutoff=30):
 def anisotropic_diffusion(image, iterations=10, k=15, gamma=0.1, option=1):
     """
     Applica il filtro di diffusione anisotropica (Perona-Malik) a un'immagine.
-
-    Args:
-        image: L'immagine in input.
-        iterations: Numero di iterazioni.
-        k: Parametro di sensibilità ai bordi.
-        gamma: Fattore di scala per il passo temporale.
-        option: Scelta del coefficiente di diffusione (1 o 2).
-
-    Returns:
-        L'immagine filtrata.
+    Funziona per immagini a colori separando i canali.
     """
-    # Converti l'immagine in scala di grigi se necessario
+    # Se l'immagine è a colori, separa i canali
     if len(image.shape) == 3:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        b, g, r = cv2.split(image)
 
-    # Normalizza l'immagine tra 0 e 1
-    image = image.astype(np.float32) / 255.0
+        # Applica il filtro anisotropico su ciascun canale
+        b_filtered = anisotropic_diffusion_single_channel(b, iterations, k, gamma, option)
+        g_filtered = anisotropic_diffusion_single_channel(g, iterations, k, gamma, option)
+        r_filtered = anisotropic_diffusion_single_channel(r, iterations, k, gamma, option)
+
+        # Ricombina i canali filtrati
+        return cv2.merge([b_filtered, g_filtered, r_filtered])
+
+    # Se l'immagine è in scala di grigi, applica il filtro normalmente
+    return anisotropic_diffusion_single_channel(image, iterations, k, gamma, option)
+
+
+def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
+    """
+    Applica la diffusione anisotropica su un singolo canale di immagine in scala di grigi.
+    """
+    # Normalizza il canale tra 0 e 1
+    channel = channel.astype(np.float32) / 255.0
 
     for _ in range(iterations):
-        # Calcola i gradienti nelle quattro direzioni (nord, sud, est, ovest)
-        nabla_north = np.roll(image, 1, axis=0) - image
-        nabla_south = np.roll(image, -1, axis=0) - image
-        nabla_east = np.roll(image, -1, axis=1) - image
-        nabla_west = np.roll(image, 1, axis=1) - image
+        nabla_north = np.roll(channel, 1, axis=0) - channel
+        nabla_south = np.roll(channel, -1, axis=0) - channel
+        nabla_east = np.roll(channel, -1, axis=1) - channel
+        nabla_west = np.roll(channel, 1, axis=1) - channel
 
-        # Coefficienti di diffusione basati sul gradiente
         if option == 1:
             c_north = np.exp(-(nabla_north / k) ** 2)
             c_south = np.exp(-(nabla_south / k) ** 2)
@@ -183,8 +188,7 @@ def anisotropic_diffusion(image, iterations=10, k=15, gamma=0.1, option=1):
             c_east = 1.0 / (1.0 + (nabla_east / k) ** 2)
             c_west = 1.0 / (1.0 + (nabla_west / k) ** 2)
 
-        # Aggiorna l'immagine
-        image += gamma * (
+        channel += gamma * (
                 c_north * nabla_north +
                 c_south * nabla_south +
                 c_east * nabla_east +
@@ -192,8 +196,8 @@ def anisotropic_diffusion(image, iterations=10, k=15, gamma=0.1, option=1):
         )
 
     # Ri-scalare i valori da 0 a 255
-    image = np.clip(image * 255, 0, 255).astype(np.uint8)
+    channel = np.clip(channel * 255, 0, 255).astype(np.uint8)
 
-    return image
+    return channel
 
 # altri filtri...
