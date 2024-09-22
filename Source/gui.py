@@ -133,7 +133,8 @@ class ImageRestorationApp(QMainWindow):
 
     def load_image(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self, "Carica Immagine", "", "Image Files (*.png *.jpg *.jpeg)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(self, "Carica Immagine", "", "Image Files (*.png *.jpg *.jpeg)",
+                                                  options=options)
         if fileName:
             self.image = load_image(fileName)
             if self.image is not None:
@@ -145,19 +146,22 @@ class ImageRestorationApp(QMainWindow):
     def save_restored_image(self):
         if self.restored_image is not None:
             options = QFileDialog.Options()
-            fileName, _ = QFileDialog.getSaveFileName(self, "Salva Immagine Restaurata", "SavedImages/", "Image Files (*.png *.jpg *.jpeg)", options=options)
+            fileName, _ = QFileDialog.getSaveFileName(self, "Salva Immagine Restaurata", "SavedImages/",
+                                                      "Image Files (*.png *.jpg *.jpeg)", options=options)
             if fileName:
                 save_image(self.restored_image, fileName)
 
     def save_filter_configuration_action(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getSaveFileName(self, "Salva Configurazione Filtri", "FilterConfig/", "JSON Files (*.json)", options=options)
+        fileName, _ = QFileDialog.getSaveFileName(self, "Salva Configurazione Filtri", "FilterConfig/",
+                                                  "JSON Files (*.json)", options=options)
         if fileName:
             save_filter_configuration(self.applied_filters, fileName)
 
     def load_filter_configuration_action(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self, "Carica Configurazione Filtri", "FilterConfig/", "JSON Files (*.json)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(self, "Carica Configurazione Filtri", "FilterConfig/",
+                                                  "JSON Files (*.json)", options=options)
         if fileName:
             filters = load_filter_configuration(fileName)
             if filters is not None:
@@ -206,11 +210,14 @@ class ImageRestorationApp(QMainWindow):
     def update_filter_list(self):
         self.filter_list.clear()
         for index, (filter_name, param) in enumerate(self.applied_filters):
-            item_widget = FilterItemWidget(filter_name, param, lambda i=index: self.remove_filter(i))
+            item_widget = FilterItemWidget(filter_name, param, self.create_remove_callback(index))
             list_item = QListWidgetItem(self.filter_list)
             list_item.setSizeHint(item_widget.sizeHint())
             self.filter_list.addItem(list_item)
             self.filter_list.setItemWidget(list_item, item_widget)
+
+    def create_remove_callback(self, index):
+        return lambda: self.remove_filter(index)
 
     # Funzione per rimuovere un filtro dalla lista
     def remove_filter(self, index):

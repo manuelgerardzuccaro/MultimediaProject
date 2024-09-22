@@ -15,12 +15,11 @@ def create_directories():
             print(f"Cartella '{directory}' già esistente.")
 
 
-
 if __name__ == "__main__":
     create_directories()
 
     app = QApplication(sys.argv)
-    app.setFont(QFont("Arial", 14))  # Imposta il font e la dimensione
+    app.setFont(QFont("Arial", 14), None)  # Imposta il font e la dimensione
 
     window = ImageRestorationApp()
     window.show()
