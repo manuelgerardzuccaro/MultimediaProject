@@ -138,11 +138,13 @@ class ImageRestorationApp(QMainWindow):
                                                   options=options)
         if fileName:
             self.image = load_image(fileName)
+            self.restored_image = self.image
             if self.image is not None:
                 image_rgb = convert_to_rgb(self.image)
                 display_image(image_rgb, self.original_label)
                 self.restored_label.clear()
                 self.reset_filters()
+                display_image(image_rgb, self.restored_label)
 
     def save_restored_image(self):
         if self.restored_image is not None:
