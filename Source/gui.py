@@ -3,7 +3,7 @@
 from PyQt5.QtGui import QFont, QKeySequence
 from PyQt5.QtCore import Qt, QSize
 from filter_worker import FilterWorker
-from filter_dialogs import HomomorphicFilterDialog, MedianFilterDialog, ShockFilterDialog, MeanFilterDialog
+from filter_dialogs import *
 from image_manager import load_image, convert_to_rgb, display_image, show_image_zoomed, save_image
 from utils import save_filter_configuration, load_filter_configuration
 from filter_item_widget import FilterItemWidget
@@ -48,15 +48,15 @@ class ImageRestorationApp(QMainWindow):
         # Aggiungere i pulsanti Undo e Redo
         button_layout = QHBoxLayout()
 
-        self.undo_button = QPushButton('←', self)
-        self.undo_button.setFont(QFont("Arial", 14))
-        self.undo_button.clicked.connect(self.undo_filter)
-        button_layout.addWidget(self.undo_button)
+        undo_button = QPushButton('←', self)
+        undo_button.setFont(QFont("Arial", 14))
+        undo_button.clicked.connect(self.undo_filter)
+        button_layout.addWidget(undo_button)
 
-        self.redo_button = QPushButton('→', self)
-        self.redo_button.setFont(QFont("Arial", 14))
-        self.redo_button.clicked.connect(self.redo_filter)
-        button_layout.addWidget(self.redo_button)
+        redo_button = QPushButton('→', self)
+        redo_button.setFont(QFont("Arial", 14))
+        redo_button.clicked.connect(self.redo_filter)
+        button_layout.addWidget(redo_button)
 
         self.layout.addLayout(button_layout)
 
@@ -102,6 +102,7 @@ class ImageRestorationApp(QMainWindow):
         filter_menu.addAction('Filtro Media Aritmetica', self.show_mean_filter_dialog)
         filter_menu.addAction('Filtro Shock', self.show_shock_filter_dialog)
         filter_menu.addAction('Filtro Homomorphic', self.show_homomorphic_filter_dialog)
+        filter_menu.addAction('Filtro Diffusione Anisotropica', self.show_anisotropic_diffusion_dialog)
 
         # Configurare le scorciatoie da tastiera per Undo e Redo
         undo_shortcut = QAction('Undo', self)
@@ -185,6 +186,10 @@ class ImageRestorationApp(QMainWindow):
         dialog = HomomorphicFilterDialog(self, self.apply_homomorphic_filter)
         dialog.exec_()
 
+    def show_anisotropic_diffusion_dialog(self):
+        dialog = AnisotropicDiffusionDialog(self, self.apply_anisotropic_diffusion)
+        dialog.exec_()
+
     # Funzioni per applicare i filtri
     def apply_median_filter(self, ksize):
         self.applied_filters.append(('Filtro Mediano', ksize))
@@ -203,6 +208,12 @@ class ImageRestorationApp(QMainWindow):
 
     def apply_homomorphic_filter(self, low, high, cutoff):
         self.applied_filters.append(('Filtro Homomorphic', {'low': low, 'high': high, 'cutoff': cutoff}))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_anisotropic_diffusion(self, iterations, k, gamma, option):
+        self.applied_filters.append(
+            ('Diffusione Anisotropica', {'iterations': iterations, 'k': k, 'gamma': gamma, 'option': option}))
         self.update_filter_list()
         self.apply_all_filters()
 

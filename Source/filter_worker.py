@@ -1,7 +1,7 @@
 ﻿import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from filters import median_filter, mean_filter, shock_filter, homomorphic_filter
+from filters import median_filter, mean_filter, shock_filter, homomorphic_filter, anisotropic_diffusion
 
 
 class FilterWorker(QThread):
@@ -24,6 +24,8 @@ class FilterWorker(QThread):
                 temp_image = shock_filter(temp_image, param)
             elif filter_name == "Filtro Homomorphic":
                 temp_image = homomorphic_filter(temp_image, low=param['low'], high=param['high'], cutoff=param['cutoff'])
+            elif filter_name == "Diffusione Anisotropica":
+                temp_image = anisotropic_diffusion(temp_image, iterations=param['iterations'], k=param['k'], gamma=param['gamma'], option=param['option'])
 
         if self._is_running:  # Verifica se l'operazione è ancora valida
             self.filter_applied.emit(temp_image)

@@ -37,7 +37,7 @@ def geometric_mean_filter(image, kernel_size=3):
             # Prendere il kernel della finestra
             window = padded_image[i - pad_size:i + pad_size + 1, j - pad_size:j + pad_size + 1]
             product = np.prod(window)
-            filtered_image[i - pad_size, j - pad_size] = product**(1.0 / (kernel_size * kernel_size))
+            filtered_image[i - pad_size, j - pad_size] = product ** (1.0 / (kernel_size * kernel_size))
 
     filtered_image = np.clip(filtered_image, 0, 255).astype(np.uint8)
     return filtered_image
@@ -56,8 +56,8 @@ def contra_harmonic_mean_filter(image, kernel_size=3, Q=1.0):
         for j in range(pad_size, padded_image.shape[1] - pad_size):
             window = padded_image[i - pad_size:i + pad_size + 1, j - pad_size:j + pad_size + 1]
 
-            num = np.sum(window**(Q + 1))
-            den = np.sum(window**Q)
+            num = np.sum(window ** (Q + 1))
+            den = np.sum(window ** Q)
 
             if den != 0:
                 filtered_image[i - pad_size, j - pad_size] = num / den
@@ -74,15 +74,15 @@ def notch_filter(image, d0, u_k, v_k):
     dft_shift = np.fft.fftshift(dft)
 
     rows, cols = image.shape
-    crow, ccol = rows // 2 , cols // 2
+    crow, ccol = rows // 2, cols // 2
 
     # Costruire il filtro notch
     for u, v in zip(u_k, v_k):
         # Calcolare la distanza euclidea dal punto (u, v) e (-u, -v)
         for i in range(rows):
             for j in range(cols):
-                duv = np.sqrt((i - (crow + u))**2 + (j - (ccol + v))**2)
-                duv_neg = np.sqrt((i - (crow - u))**2 + (j - (ccol - v))**2)
+                duv = np.sqrt((i - (crow + u)) ** 2 + (j - (ccol + v)) ** 2)
+                duv_neg = np.sqrt((i - (crow - u)) ** 2 + (j - (ccol - v)) ** 2)
 
                 if duv < d0 or duv_neg < d0:
                     dft_shift[i, j] = 0  # Elimina queste frequenze
@@ -142,5 +142,58 @@ def homomorphic_filter(image, low=0.5, high=1.5, cutoff=30):
     image_exp = np.clip(image_exp, 0, 1)
     return (image_exp * 255).astype("uint8")
 
+
+def anisotropic_diffusion(image, iterations=10, k=15, gamma=0.1, option=1):
+    """
+    Applica il filtro di diffusione anisotropica (Perona-Malik) a un'immagine.
+
+    Args:
+        image: L'immagine in input.
+        iterations: Numero di iterazioni.
+        k: Parametro di sensibilità ai bordi.
+        gamma: Fattore di scala per il passo temporale.
+        option: Scelta del coefficiente di diffusione (1 o 2).
+
+    Returns:
+        L'immagine filtrata.
+    """
+    # Converti l'immagine in scala di grigi se necessario
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Normalizza l'immagine tra 0 e 1
+    image = image.astype(np.float32) / 255.0
+
+    for _ in range(iterations):
+        # Calcola i gradienti nelle quattro direzioni (nord, sud, est, ovest)
+        nabla_north = np.roll(image, 1, axis=0) - image
+        nabla_south = np.roll(image, -1, axis=0) - image
+        nabla_east = np.roll(image, -1, axis=1) - image
+        nabla_west = np.roll(image, 1, axis=1) - image
+
+        # Coefficienti di diffusione basati sul gradiente
+        if option == 1:
+            c_north = np.exp(-(nabla_north / k) ** 2)
+            c_south = np.exp(-(nabla_south / k) ** 2)
+            c_east = np.exp(-(nabla_east / k) ** 2)
+            c_west = np.exp(-(nabla_west / k) ** 2)
+        elif option == 2:
+            c_north = 1.0 / (1.0 + (nabla_north / k) ** 2)
+            c_south = 1.0 / (1.0 + (nabla_south / k) ** 2)
+            c_east = 1.0 / (1.0 + (nabla_east / k) ** 2)
+            c_west = 1.0 / (1.0 + (nabla_west / k) ** 2)
+
+        # Aggiorna l'immagine
+        image += gamma * (
+                c_north * nabla_north +
+                c_south * nabla_south +
+                c_east * nabla_east +
+                c_west * nabla_west
+        )
+
+    # Ri-scalare i valori da 0 a 255
+    image = np.clip(image * 255, 0, 255).astype(np.uint8)
+
+    return image
 
 # altri filtri...
