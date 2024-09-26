@@ -99,6 +99,7 @@ class ImageRestorationApp(QMainWindow):
         filter_menu.addAction('Filtro Homomorphic', self.show_homomorphic_filter_dialog)
         filter_menu.addAction('Filtro Diffusione Anisotropica', self.show_anisotropic_diffusion_dialog)
         filter_menu.addAction('Deconvoluzione ℓ1-TV', self.show_l1_tv_deconvolution_dialog)
+        filter_menu.addAction('Deconvoluzione Wiener', self.show_wiener_deconvolution_dialog)
 
         # shortcut Undo e Redo
         undo_shortcut = QAction('Undo', self)
@@ -202,6 +203,10 @@ class ImageRestorationApp(QMainWindow):
         dialog = L1TVDeconvolutionDialog(self, self.apply_l1_tv_deconvolution)
         dialog.exec_()
 
+    def show_wiener_deconvolution_dialog(self):
+        dialog = MedianFilterDialog(self, self.apply_wiener_deconvolution)  # Utilizzo del dialogo del filtro mediano per selezionare la dimensione del kernel
+        dialog.exec_()
+
     def apply_median_filter(self, ksize):
         self.applied_filters.append(('Filtro Mediano', ksize))
         self.update_filter_list()
@@ -245,6 +250,11 @@ class ImageRestorationApp(QMainWindow):
 
     def apply_l1_tv_deconvolution(self, iterations, regularization_weight):
         self.applied_filters.append(('Deconvoluzione ℓ1-TV', {'iterations': iterations, 'regularization_weight': regularization_weight}))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_wiener_deconvolution(self, kernel_size):
+        self.applied_filters.append(('Deconvoluzione Wiener', kernel_size))
         self.update_filter_list()
         self.apply_all_filters()
 

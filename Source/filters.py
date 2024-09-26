@@ -1,6 +1,7 @@
 ﻿import cv2
 import numpy as np
 from scipy.ndimage import convolve
+from scipy.signal import wiener
 
 
 def median_filter(image, ksize):
@@ -319,5 +320,17 @@ def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
 
     return restored_image
 
+
+def wiener_deconvolution(image, kernel_size=5):
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # applicazione del filtro di Wiener per la deconvoluzione
+    deconvolved_image = wiener(image, (kernel_size, kernel_size))
+
+    # Normalizzazione e conversione in uint8
+    deconvolved_image = np.clip(deconvolved_image * 255, 0, 255).astype(np.uint8)
+
+    return deconvolved_image
 
 # altri filtri...
