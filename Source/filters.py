@@ -1,5 +1,6 @@
 ﻿import cv2
 import numpy as np
+from scipy.ndimage import convolve
 
 
 def median_filter(image, ksize):
@@ -275,9 +276,48 @@ def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
                 c_west * nabla_west
         )
 
-    # ri-scalare i valori da 0 a 255
+    # ri-scalatura dei valori da 0 a 255
     channel = np.clip(channel * 255, 0, 255).astype(np.uint8)
 
     return channel
+
+
+def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
+    # conversione in scala di grigi (se è a colori)
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # filtro mediano preliminare per ridurre il rumore "sale e pepe"
+    image = cv2.medianBlur(image, 3)
+
+    # normalizzazione dell'immagine
+    image = image.astype(np.float32) / 255.0
+
+    restored_image = image.copy()
+
+    # kernel per la convoluzione (gaussiano)
+    kernel = np.array([[1, 2, 1],
+                       [2, 4, 2],
+                       [1, 2, 1]]) / 16
+
+    for _ in range(iterations):
+        blurred_image = convolve(restored_image, kernel)
+
+        # gradiente per la regolarizzazione TV
+        gradient_x = np.roll(restored_image, -1, axis=1) - restored_image
+        gradient_y = np.roll(restored_image, -1, axis=0) - restored_image
+        tv_term = np.sqrt(gradient_x ** 2 + gradient_y ** 2 + 1e-5)
+
+        fidelity_term = blurred_image - image
+        fidelity_term = np.clip(fidelity_term, -0.1, 0.1)  # Applicazione di soglia
+
+        update_term = regularization_weight * (fidelity_term / (tv_term + 1e-8))
+        restored_image -= update_term
+
+    # ri-scalatura dei valori dell'immagine e ritorno al formato uint8
+    restored_image = np.clip(restored_image * 255, 0, 255).astype(np.uint8)
+
+    return restored_image
+
 
 # altri filtri...

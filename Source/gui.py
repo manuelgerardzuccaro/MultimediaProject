@@ -98,6 +98,7 @@ class ImageRestorationApp(QMainWindow):
         filter_menu.addAction('Filtro Shock', self.show_shock_filter_dialog)
         filter_menu.addAction('Filtro Homomorphic', self.show_homomorphic_filter_dialog)
         filter_menu.addAction('Filtro Diffusione Anisotropica', self.show_anisotropic_diffusion_dialog)
+        filter_menu.addAction('Deconvoluzione ℓ1-TV', self.show_l1_tv_deconvolution_dialog)
 
         # shortcut Undo e Redo
         undo_shortcut = QAction('Undo', self)
@@ -197,6 +198,10 @@ class ImageRestorationApp(QMainWindow):
         dialog = AnisotropicDiffusionDialog(self, self.apply_anisotropic_diffusion)
         dialog.exec_()
 
+    def show_l1_tv_deconvolution_dialog(self):
+        dialog = L1TVDeconvolutionDialog(self, self.apply_l1_tv_deconvolution)
+        dialog.exec_()
+
     def apply_median_filter(self, ksize):
         self.applied_filters.append(('Filtro Mediano', ksize))
         self.update_filter_list()
@@ -235,6 +240,11 @@ class ImageRestorationApp(QMainWindow):
     def apply_anisotropic_diffusion(self, iterations, k, gamma, option):
         self.applied_filters.append(
             ('Diffusione Anisotropica', {'iterations': iterations, 'k': k, 'gamma': gamma, 'option': option}))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_l1_tv_deconvolution(self, iterations, regularization_weight):
+        self.applied_filters.append(('Deconvoluzione ℓ1-TV', {'iterations': iterations, 'regularization_weight': regularization_weight}))
         self.update_filter_list()
         self.apply_all_filters()
 

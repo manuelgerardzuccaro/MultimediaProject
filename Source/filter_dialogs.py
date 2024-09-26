@@ -294,3 +294,48 @@ class AnisotropicDiffusionDialog(QDialog):
         option = 1 if self.option1_radio.isChecked() else 2
         self.apply_callback(iterations, k, gamma, option)
         self.close()
+
+
+class L1TVDeconvolutionDialog(QDialog):
+    def __init__(self, parent, apply_callback):
+        super().__init__(parent)
+        self.setWindowTitle("Deconvoluzione ℓ1-TV")
+
+        layout = QVBoxLayout(self)
+
+        self.iterations_slider = QSlider(Qt.Horizontal)
+        self.iterations_slider.setMinimum(1)
+        self.iterations_slider.setMaximum(100)
+        self.iterations_slider.setValue(50)
+        self.iterations_label = QLabel(f"Iterazioni: {self.iterations_slider.value()}", self)
+        self.iterations_slider.valueChanged.connect(
+            lambda: self.iterations_label.setText(f"Iterazioni: {self.iterations_slider.value()}"))
+
+        self.reg_weight_slider = QSlider(Qt.Horizontal)
+        self.reg_weight_slider.setMinimum(1)
+        self.reg_weight_slider.setMaximum(100)
+        self.reg_weight_slider.setValue(10)
+        self.reg_weight_label = QLabel(f"Peso regolarizzazione: {self.reg_weight_slider.value() / 100.0}", self)
+        self.reg_weight_slider.valueChanged.connect(
+            lambda: self.reg_weight_label.setText(f"Peso regolarizzazione: {self.reg_weight_slider.value() / 100.0}"))
+
+        layout.addWidget(self.iterations_label)
+        layout.addWidget(self.iterations_slider)
+        layout.addWidget(self.reg_weight_label)
+        layout.addWidget(self.reg_weight_slider)
+
+        apply_button = QPushButton('Applica', self)
+        apply_button.clicked.connect(self.apply_filter)
+        layout.addWidget(apply_button)
+
+        cancel_button = QPushButton('Cancella', self)
+        cancel_button.clicked.connect(self.close)
+        layout.addWidget(cancel_button)
+
+        self.apply_callback = apply_callback
+
+    def apply_filter(self):
+        iterations = self.iterations_slider.value()
+        regularization_weight = self.reg_weight_slider.value() / 100.0
+        self.apply_callback(iterations, regularization_weight)
+        self.close()
