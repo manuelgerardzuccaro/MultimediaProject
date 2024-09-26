@@ -16,25 +16,22 @@ class ImageRestorationApp(QMainWindow):
 
         self.image = None
         self.restored_image = None
-        self.applied_filters = []  # Lista dei filtri applicati
-        self.undo_stack = []  # Stack per undo dei filtri
-        self.redo_stack = []  # Stack per redo dei filtri
+        self.applied_filters = []  # lista dei filtri applicati
+        self.undo_stack = []  # stack per undo dei filtri
+        self.redo_stack = []  # stack per redo dei filtri
 
         self.initUI()
 
     def initUI(self):
-        # Impostazioni base della finestra (occupare tutto lo schermo)
         screen = QApplication.primaryScreen().availableGeometry()
         self.setGeometry(0, 0, screen.width(), screen.height())
-        self.setFixedSize(screen.width(), screen.height())  # Fissa la dimensione della finestra
+        self.setFixedSize(screen.width(), screen.height())
         self.setWindowTitle('Restauro Immagini')
 
-        # Layout principale
         self.main_widget = QWidget(self)
         self.setCentralWidget(self.main_widget)
         self.layout = QVBoxLayout(self.main_widget)
 
-        # Label per mostrare l'immagine originale e restaurata
         self.original_label = QLabel('Immagine originale', self)
         self.original_label.setAlignment(Qt.AlignCenter)
         self.restored_label = QLabel('Immagine restaurata', self)
@@ -45,7 +42,7 @@ class ImageRestorationApp(QMainWindow):
         image_layout.addWidget(self.restored_label)
         self.layout.addLayout(image_layout)
 
-        # Aggiungere i pulsanti Undo e Redo
+        # pulsanti Undo e Redo
         button_layout = QHBoxLayout()
 
         undo_button = QPushButton('←', self)
@@ -60,32 +57,28 @@ class ImageRestorationApp(QMainWindow):
 
         self.layout.addLayout(button_layout)
 
-        # Lista dei filtri applicati (spostata in basso e ridotta)
+        # lista filtri applicati
         self.filter_list = QListWidget(self)
         self.filter_list.setFont(QFont("Arial", 10))
-        self.filter_list.setMaximumHeight(150)  # Altezza ridotta
-        self.filter_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)  # Dimensione fissa
+        self.filter_list.setMaximumHeight(150)
+        self.filter_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
-        # Aggiungi la lista dei filtri in basso
         self.layout.addWidget(self.filter_list)
 
-        # Barra dei menu
+        # barra menu
         menubar = self.menuBar()
 
-        # Menu File
+        # barra menu - file
         file_menu = menubar.addMenu('File')
 
-        # Azione per caricare l'immagine
         load_action = QAction('Carica immagine', self)
         load_action.triggered.connect(self.load_image)
         file_menu.addAction(load_action)
 
-        # Azione per salvare l'immagine restaurata
         save_image_action = QAction('Salva immagine', self)
         save_image_action.triggered.connect(self.save_restored_image)
         file_menu.addAction(save_image_action)
 
-        # Azioni per salvare e caricare la configurazione dei filtri
         save_action = QAction('Salva configurazione filtri', self)
         save_action.triggered.connect(self.save_filter_configuration_action)
         file_menu.addAction(save_action)
@@ -94,17 +87,19 @@ class ImageRestorationApp(QMainWindow):
         load_action.triggered.connect(self.load_filter_configuration_action)
         file_menu.addAction(load_action)
 
-        # Menu Filtri
+        # barra menu - filtri
         filter_menu = menubar.addMenu('Filtri')
 
-        # Aggiungere i filtri al menu
         filter_menu.addAction('Filtro Mediano', self.show_median_filter_dialog)
+        filter_menu.addAction('Filtro MedianBlur', self.show_median_blur_filter_dialog)
         filter_menu.addAction('Filtro Media Aritmetica', self.show_mean_filter_dialog)
+        filter_menu.addAction('Filtro Media Geometrica', self.show_geometric_mean_filter_dialog)
+        filter_menu.addAction('Filtro Media Geometrica Logaritmica', self.show_log_geometric_mean_filter_dialog)
         filter_menu.addAction('Filtro Shock', self.show_shock_filter_dialog)
         filter_menu.addAction('Filtro Homomorphic', self.show_homomorphic_filter_dialog)
         filter_menu.addAction('Filtro Diffusione Anisotropica', self.show_anisotropic_diffusion_dialog)
 
-        # Configurare le scorciatoie da tastiera per Undo e Redo
+        # shortcut Undo e Redo
         undo_shortcut = QAction('Undo', self)
         undo_shortcut.setShortcut(QKeySequence("Ctrl+Z"))
         undo_shortcut.triggered.connect(self.undo_filter)
@@ -115,27 +110,26 @@ class ImageRestorationApp(QMainWindow):
         redo_shortcut.triggered.connect(self.redo_filter)
         self.addAction(redo_shortcut)
 
-    # Funzioni per gestire Undo e Redo
     def undo_filter(self):
         if not self.applied_filters:
-            return  # Nessun filtro da annullare
-        last_filter = self.applied_filters.pop()  # Rimuovi l'ultimo filtro applicato
-        self.undo_stack.append(last_filter)  # Aggiungi allo stack di undo
-        self.update_filter_list()  # Aggiorna la lista dei filtri
-        self.apply_all_filters()  # Ricalcola i filtri rimasti
+            return
+        last_filter = self.applied_filters.pop()
+        self.undo_stack.append(last_filter)
+        self.update_filter_list()
+        self.apply_all_filters()
 
     def redo_filter(self):
         if not self.undo_stack:
-            return  # Nessun filtro da ripristinare
-        last_undo = self.undo_stack.pop()  # Ripristina l'ultimo filtro annullato
-        self.applied_filters.append(last_undo)  # Riapplica il filtro
-        self.update_filter_list()  # Aggiorna la lista dei filtri
-        self.apply_all_filters()  # Ricalcola i filtri applicati
+            return
+        last_undo = self.undo_stack.pop()
+        self.applied_filters.append(last_undo)
+        self.update_filter_list()
+        self.apply_all_filters()
 
     def load_image(self):
         options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getOpenFileName(self, "Carica Immagine", "", "Image Files (*.png *.jpg *.jpeg)",
-                                                  options=options)
+        fileName, _ = QFileDialog.getOpenFileName(self, "Carica Immagine", "", "Image Files "
+                                                                               "(*.png *.jpg *.jpeg)", options=options)
         if fileName:
             self.image = load_image(fileName)
             self.restored_image = self.image
@@ -171,13 +165,24 @@ class ImageRestorationApp(QMainWindow):
                 self.applied_filters = filters
                 self.apply_all_filters()
 
-    # Funzioni per aprire le finestre di dialogo dei filtri
     def show_median_filter_dialog(self):
         dialog = MedianFilterDialog(self, self.apply_median_filter)
         dialog.exec_()
 
+    def show_median_blur_filter_dialog(self):
+        dialog = MedianFilterDialog(self, self.apply_median_blur_filter)
+        dialog.exec_()
+
     def show_mean_filter_dialog(self):
         dialog = MeanFilterDialog(self, self.apply_mean_filter)
+        dialog.exec_()
+
+    def show_geometric_mean_filter_dialog(self):
+        dialog = GeometricMeanFilterDialog(self, self.apply_geometric_mean_filter)
+        dialog.exec_()
+
+    def show_log_geometric_mean_filter_dialog(self):
+        dialog = LogGeometricMeanFilterDialog(self, self.apply_log_geometric_mean_filter)
         dialog.exec_()
 
     def show_shock_filter_dialog(self):
@@ -192,14 +197,28 @@ class ImageRestorationApp(QMainWindow):
         dialog = AnisotropicDiffusionDialog(self, self.apply_anisotropic_diffusion)
         dialog.exec_()
 
-    # Funzioni per applicare i filtri
     def apply_median_filter(self, ksize):
         self.applied_filters.append(('Filtro Mediano', ksize))
         self.update_filter_list()
         self.apply_all_filters()
 
+    def apply_median_blur_filter(self, ksize):
+        self.applied_filters.append(('Filtro MedianBlur', ksize))
+        self.update_filter_list()
+        self.apply_all_filters()
+
     def apply_mean_filter(self, kernel_size):
         self.applied_filters.append(('Filtro Media Aritmetica', kernel_size))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_geometric_mean_filter(self, kernel_size):
+        self.applied_filters.append(('Filtro Media Geometrica', kernel_size))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_log_geometric_mean_filter(self, kernel_size):
+        self.applied_filters.append(('Filtro Media Geometrica Logaritmica', kernel_size))
         self.update_filter_list()
         self.apply_all_filters()
 
@@ -219,7 +238,6 @@ class ImageRestorationApp(QMainWindow):
         self.update_filter_list()
         self.apply_all_filters()
 
-    # Funzione per aggiornare la lista dei filtri applicati
     def update_filter_list(self):
         self.filter_list.clear()
         for index, (filter_name, param) in enumerate(self.applied_filters):
@@ -232,25 +250,21 @@ class ImageRestorationApp(QMainWindow):
     def create_remove_callback(self, index):
         return lambda: self.remove_filter(index)
 
-    # Funzione per rimuovere un filtro dalla lista
     def remove_filter(self, index):
         self.applied_filters.pop(index)
         self.update_filter_list()
         self.apply_all_filters()
 
-    # Funzione per resettare i filtri
     def reset_filters(self):
         self.applied_filters = []
         self.filter_list.clear()
 
-    # Funzione per applicare tutti i filtri all'immagine
     def apply_all_filters(self):
         if self.image is not None:
             if hasattr(self, 'worker') and self.worker.isRunning():
                 self.worker.stop()
                 self.worker.wait()
 
-            # Avvia un nuovo worker per applicare i filtri
             self.worker = FilterWorker(self.image, self.applied_filters)
             self.worker.filter_applied.connect(self.on_filter_applied)
             self.worker.start()

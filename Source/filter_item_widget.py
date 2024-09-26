@@ -11,5 +11,5 @@ class FilterItemWidget(QWidget):
 
         self.remove_button = QPushButton("X", self)
         self.remove_button.setFixedSize(20, 20)
-        self.remove_button.clicked.connect(remove_callback)  # Collegare la funzione per rimuovere il filtro
+        self.remove_button.clicked.connect(remove_callback)  # callback per rimuovere il filtro
         self.layout.addWidget(self.remove_button)

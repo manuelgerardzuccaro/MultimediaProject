@@ -19,7 +19,7 @@ if __name__ == "__main__":
     create_directories()
 
     app = QApplication(sys.argv)
-    app.setFont(QFont("Arial", 14), None)  # Imposta il font e la dimensione
+    app.setFont(QFont("Arial", 14), None)
 
     window = ImageRestorationApp()
     window.show()
