@@ -328,7 +328,7 @@ def wiener_deconvolution(image, kernel_size=5):
     # applicazione del filtro di Wiener per la deconvoluzione
     deconvolved_image = wiener(image, (kernel_size, kernel_size))
 
-    # Normalizzazione e conversione in uint8
+    # normalizzazione e conversione in uint8
     deconvolved_image = np.clip(deconvolved_image * 255, 0, 255).astype(np.uint8)
 
     return deconvolved_image
