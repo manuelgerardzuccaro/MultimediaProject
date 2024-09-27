@@ -228,8 +228,26 @@ def homomorphic_filter(image, low=0.5, high=1.5, cutoff=30):
 def anisotropic_diffusion(image, iterations=10, k=15, gamma=0.1, option=1):
     """
     Applica il filtro di diffusione anisotropica (Perona-Malik) a un'immagine.
+    Efficace nel correggere rumore additivo di tipo gaussiano
+
     Funziona per immagini a colori separando i canali.
+
+    - Iterations: Un numero più basso di iterazioni se si vuole mantenere i dettagli, mentre un numero più alto se il
+        rumore è molto forte
+
+    - K (Sensibilità al gradiente): determina quanto l'algoritmo sarà capace di distinguere tra il rumore e i dettagli/bordi
+
+    - Gamma (Fattore di velocità della diffusione): Controlla la quantità di modifica applicata ai pixel a ogni iterazione,
+        valori troppo alti possono causare instabilità e artefatti
+
+    - Option 1 (Funzione Esponenziale): Quando il mantenimento dei bordi è una priorità assoluta e quando si ha
+        un'immagine con dettagli nitidi che non devono essere sfocati.
+
+    - Option 2 (Funzione Razionale): Quando si desidera una riduzione del rumore più uniforme e non si è troppo
+        preoccupati di preservare bordi molto netti. È utile per immagini dove i dettagli sono meno definiti o dove si
+        cerca un compromesso tra riduzione del rumore e mantenimento dei bordi.
     """
+
     # se immagine a colori (canali separati)
     if len(image.shape) == 3:
         b, g, r = cv2.split(image)
@@ -254,11 +272,13 @@ def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
     channel = channel.astype(np.float32) / 255.0
 
     for _ in range(iterations):
+        # calcolo dei gradienti
         nabla_north = np.roll(channel, 1, axis=0) - channel
         nabla_south = np.roll(channel, -1, axis=0) - channel
         nabla_east = np.roll(channel, -1, axis=1) - channel
         nabla_west = np.roll(channel, 1, axis=1) - channel
 
+        # calcolo dei coefficienti di diffusione
         if option == 1:
             c_north = np.exp(-(nabla_north / k) ** 2)
             c_south = np.exp(-(nabla_south / k) ** 2)
