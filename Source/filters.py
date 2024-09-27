@@ -197,6 +197,12 @@ def shock_filter(image, iterations=10, dt=0.1):
 
 
 def homomorphic_filter(image, low=0.5, high=1.5, cutoff=30):
+    """
+    low e high sono i fattori che determinano la quantità di amplificazione o attenuazione delle basse e alte frequenze.
+
+    cutoff è il parametro che controlla la dimensione della regione a bassa frequenza nel centro dello spettro.
+        Un valore più alto rende il filtro meno sensibile alle basse frequenze
+   """
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)  # in scala di grigio
     image_log = np.log1p(np.array(image, dtype="float") / 255)
 
@@ -207,6 +213,7 @@ def homomorphic_filter(image, low=0.5, high=1.5, cutoff=30):
     # filtro passa_basso + passa_alto
     rows, cols = image.shape
     crow, ccol = rows // 2, cols // 2
+
     mask = np.ones((rows, cols), np.float32)
     for i in range(rows):
         for j in range(cols):
