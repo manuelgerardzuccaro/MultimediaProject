@@ -1,11 +1,14 @@
 ﻿import cv2
 import json
 
+
 def calculate_psnr(original, restored):
     return cv2.PSNR(original, restored)
 
+
 def save_image(image, path):
     cv2.imwrite(path, image)
+
 
 def save_filter_configuration(filters, file_path):
     try:
@@ -14,6 +17,7 @@ def save_filter_configuration(filters, file_path):
         print(f"Configurazione salvata con successo in {file_path}")
     except Exception as e:
         print(f"Errore durante il salvataggio della configurazione: {e}")
+
 
 def load_filter_configuration(file_path):
     try:

@@ -1,5 +1,7 @@
 ﻿import csv
+import os
 
+import cv2
 from PyQt5.QtWidgets import QMainWindow, QAction, QVBoxLayout, QLabel, QWidget, QFileDialog, QApplication, QHBoxLayout, \
     QListWidget, QListWidgetItem, QSizePolicy, QPushButton
 from PyQt5.QtGui import QFont, QKeySequence
@@ -144,17 +146,46 @@ class ImageRestorationApp(QMainWindow):
                 self.reset_filters()
                 display_image(image_rgb, self.restored_label)
 
-    def log_filter_results(self, image_name, filters, restored_image, csv_filename='risultati_restauro.csv'):
-        # Calcola il PSNR tra l'immagine originale e quella restaurata
-        psnr_value = calculate_psnr(self.image, restored_image)
+    def log_filter_results(self, image_name, filters, restored_image, image_id, csv_filename='risultati_restauro.csv'):
+        # Converti entrambe le immagini in RGB per garantire che abbiano lo stesso formato
+        if len(self.image.shape) == 2:  # Se l'immagine originale è in scala di grigi
+            original_image = cv2.cvtColor(self.image, cv2.COLOR_GRAY2RGB)
+        else:
+            original_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
-        # Prepara i dati dei filtri applicati
-        filter_data = "; ".join([f"{filter_name}={params}" for filter_name, params in filters])
+        if len(restored_image.shape) == 2:  # Se l'immagine restaurata è in scala di grigi
+            restored_image = cv2.cvtColor(restored_image, cv2.COLOR_GRAY2RGB)
+        else:
+            restored_image = cv2.cvtColor(restored_image, cv2.COLOR_BGR2RGB)
+
+        # Verifica se le immagini hanno la stessa dimensione; in caso contrario, ridimensiona quella restaurata
+        if original_image.shape != restored_image.shape:
+            restored_image = cv2.resize(restored_image, (original_image.shape[1], original_image.shape[0]))
+
+        # Calcola il PSNR tra l'immagine originale e quella restaurata
+        psnr_value = calculate_psnr(original_image, restored_image)
+
+        # Verifica se il file CSV esiste già
+        file_exists = os.path.isfile(csv_filename)
 
         # Scrive i risultati nel file CSV
         with open(csv_filename, mode='a', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow([image_name, filter_data, psnr_value, ""])
+
+            # Scrive l'intestazione solo se il file non esiste
+            if not file_exists:
+                writer.writerow(["ID", "NomeFile", "NomeFiltro", "Parametri", "PSNR"])
+
+            # Aggiunge i dati per ciascun filtro applicato
+            for filter_name, params in filters:
+                # Gestisci il tipo dei parametri
+                if isinstance(params, dict):
+                    filter_data = "; ".join([f"{key}={value}" for key, value in params.items()])
+                else:
+                    filter_data = str(params)
+
+                # Scrive la riga con l'ID passato come parametro
+                writer.writerow([image_id, image_name, filter_name, filter_data, psnr_value])
 
     def save_restored_image(self):
         if self.restored_image is not None:
@@ -164,9 +195,21 @@ class ImageRestorationApp(QMainWindow):
             if fileName:
                 save_image(self.restored_image, fileName)
 
-                # salvataggio dei risultati nel CSV
-                image_name = fileName.split('/')[-1]  # estrazione del nome dell'immagine dal percorso
-                self.log_filter_results(image_name, self.applied_filters, self.restored_image)
+                # Genera un nuovo ID solo una volta per questa immagine
+                csv_filename = 'risultati_restauro.csv'
+                file_exists = os.path.isfile(csv_filename)
+                image_id = 1  # ID iniziale
+                if file_exists:
+                    with open(csv_filename, mode='r', newline='') as file:
+                        reader = csv.reader(file)
+                        next(reader)  # Salta l'intestazione
+                        ids = [int(row[0]) for row in reader if row]  # Estrai tutti gli ID esistenti
+                        if ids:
+                            image_id = max(ids) + 1  # Incrementa l'ID massimo esistente
+
+                # Salva i risultati nel CSV con l'ID univoco
+                image_name = fileName.split('/')[-1]  # Estrai il nome dell'immagine dal percorso
+                self.log_filter_results(image_name, self.applied_filters, self.restored_image, image_id)
                 print(f"Risultati salvati nel CSV per l'immagine: {image_name}")
 
     def save_filter_configuration_action(self):
