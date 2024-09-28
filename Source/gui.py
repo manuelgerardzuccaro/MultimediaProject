@@ -1,11 +1,13 @@
-﻿from PyQt5.QtWidgets import QMainWindow, QAction, QVBoxLayout, QLabel, QWidget, QFileDialog, QApplication, QHBoxLayout, \
+﻿import csv
+
+from PyQt5.QtWidgets import QMainWindow, QAction, QVBoxLayout, QLabel, QWidget, QFileDialog, QApplication, QHBoxLayout, \
     QListWidget, QListWidgetItem, QSizePolicy, QPushButton
 from PyQt5.QtGui import QFont, QKeySequence
 from PyQt5.QtCore import Qt, QSize
 from filter_worker import FilterWorker
 from filter_dialogs import *
 from image_manager import load_image, convert_to_rgb, display_image, show_image_zoomed, save_image
-from utils import save_filter_configuration, load_filter_configuration
+from utils import save_filter_configuration, load_filter_configuration, calculate_psnr
 from filter_item_widget import FilterItemWidget
 import sys
 
@@ -142,6 +144,18 @@ class ImageRestorationApp(QMainWindow):
                 self.reset_filters()
                 display_image(image_rgb, self.restored_label)
 
+    def log_filter_results(self, image_name, filters, restored_image, csv_filename='risultati_restauro.csv'):
+        # Calcola il PSNR tra l'immagine originale e quella restaurata
+        psnr_value = calculate_psnr(self.image, restored_image)
+
+        # Prepara i dati dei filtri applicati
+        filter_data = "; ".join([f"{filter_name}={params}" for filter_name, params in filters])
+
+        # Scrive i risultati nel file CSV
+        with open(csv_filename, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([image_name, filter_data, psnr_value, ""])
+
     def save_restored_image(self):
         if self.restored_image is not None:
             options = QFileDialog.Options()
@@ -149,6 +163,11 @@ class ImageRestorationApp(QMainWindow):
                                                       "Image Files (*.png *.jpg *.jpeg)", options=options)
             if fileName:
                 save_image(self.restored_image, fileName)
+
+                # salvataggio dei risultati nel CSV
+                image_name = fileName.split('/')[-1]  # estrazione del nome dell'immagine dal percorso
+                self.log_filter_results(image_name, self.applied_filters, self.restored_image)
+                print(f"Risultati salvati nel CSV per l'immagine: {image_name}")
 
     def save_filter_configuration_action(self):
         options = QFileDialog.Options()
@@ -204,7 +223,8 @@ class ImageRestorationApp(QMainWindow):
         dialog.exec_()
 
     def show_wiener_deconvolution_dialog(self):
-        dialog = MedianFilterDialog(self, self.apply_wiener_deconvolution)  # Utilizzo del dialogo del filtro mediano per selezionare la dimensione del kernel
+        dialog = MedianFilterDialog(self,
+                                    self.apply_wiener_deconvolution)  # Utilizzo del dialogo del filtro mediano per selezionare la dimensione del kernel
         dialog.exec_()
 
     def apply_median_filter(self, ksize):
@@ -249,7 +269,8 @@ class ImageRestorationApp(QMainWindow):
         self.apply_all_filters()
 
     def apply_l1_tv_deconvolution(self, iterations, regularization_weight):
-        self.applied_filters.append(('Deconvoluzione ℓ1-TV', {'iterations': iterations, 'regularization_weight': regularization_weight}))
+        self.applied_filters.append(
+            ('Deconvoluzione ℓ1-TV', {'iterations': iterations, 'regularization_weight': regularization_weight}))
         self.update_filter_list()
         self.apply_all_filters()
 
