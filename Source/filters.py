@@ -27,7 +27,8 @@ def median_filter(image, ksize):
     else:  # immagine a colori
         filtered_image = np.zeros_like(image)
         for c in range(image.shape[2]):  # si itera sui canali (R, G, B)
-            padded_image = cv2.copyMakeBorder(image[:, :, c], pad_size, pad_size, pad_size, pad_size, cv2.BORDER_REFLECT)
+            padded_image = cv2.copyMakeBorder(image[:, :, c], pad_size, pad_size, pad_size, pad_size,
+                                              cv2.BORDER_REFLECT)
 
             for i in range(pad_size, padded_image.shape[0] - pad_size):
                 for j in range(pad_size, padded_image.shape[1] - pad_size):
@@ -360,4 +361,57 @@ def wiener_deconvolution(image, kernel_size=5):
 
     return deconvolved_image
 
+
 # altri filtri...
+
+
+# rumori
+
+def add_gaussian_noise(image):
+    mean = 0
+    std_dev = 25  # intensità del rumore
+    noise = np.random.normal(mean, std_dev, image.shape).astype(np.uint8)
+    noisy_image = cv2.add(image, noise)
+    return noisy_image
+
+
+def add_salt_pepper_noise(image):
+    prob = 0.05  # probabilità di sale e pepe
+    noisy_image = image.copy()
+
+    # sale (pixel bianchi)
+    num_salt = np.ceil(prob * image.size * 0.5)
+    coords = [np.random.randint(0, i - 1, int(num_salt)) for i in image.shape]
+    noisy_image[coords[0], coords[1]] = 255
+
+    # pepe (pixel neri)
+    num_pepper = np.ceil(prob * image.size * 0.5)
+    coords = [np.random.randint(0, i - 1, int(num_pepper)) for i in image.shape]
+    noisy_image[coords[0], coords[1]] = 0
+
+    return noisy_image
+
+
+def add_uniform_noise(image):
+    noise = np.random.uniform(0, 50, image.shape).astype(np.uint8)
+    noisy_image = cv2.add(image, noise)
+    return noisy_image
+
+
+def add_film_grain_noise(image):
+    row, col, ch = image.shape
+    gauss = np.random.normal(0, 20, (row, col, ch)).astype(np.uint8)
+    noisy_image = cv2.add(image, gauss)
+    return noisy_image
+
+
+def add_periodic_noise(image):
+    # rumore periodico sinusoidale
+    row, col, ch = image.shape
+    periodic_noise = np.sin(np.linspace(0, 2 * np.pi, col))
+    periodic_noise = np.tile(periodic_noise, (row, 1))
+    for i in range(ch):
+        image[:, :, i] = cv2.add(image[:, :, i], (periodic_noise * 50).astype(np.uint8))
+    return image
+
+# altri rumori...
