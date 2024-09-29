@@ -3,7 +3,8 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from filters import median_filter, mean_filter, shock_filter, homomorphic_filter, anisotropic_diffusion, \
     median_blur_filter, geometric_mean_filter, log_geometric_mean_filter, l1_tv_deconvolution, wiener_deconvolution, \
-    add_gaussian_noise, add_salt_pepper_noise, add_uniform_noise, add_film_grain_noise, add_periodic_noise
+    add_gaussian_noise, add_salt_pepper_noise, add_uniform_noise, add_film_grain_noise, add_periodic_noise, \
+    gaussian_filter, contra_harmonic_mean_filter, notch_filter
 
 
 class FilterWorker(QThread):
@@ -28,6 +29,12 @@ class FilterWorker(QThread):
                 temp_image = geometric_mean_filter(temp_image, param)
             elif filter_name == "Filtro Media Geometrica Logaritmica":
                 temp_image = log_geometric_mean_filter(temp_image, param)
+            elif filter_name == "Filtro Gaussiano":
+                temp_image = gaussian_filter(temp_image, kernel_size=param['kernel_size'], sigma=param['sigma'])
+            elif filter_name == "Filtro Contra-Harmonic Mean":
+                temp_image = contra_harmonic_mean_filter(temp_image, kernel_size=param['kernel_size'], Q=param['Q'])
+            elif filter_name == "Filtro Notch":
+                temp_image = notch_filter(temp_image, d0=param['d0'], u_k=param['u_k'], v_k=param['v_k'])
             elif filter_name == "Filtro Shock":
                 temp_image = shock_filter(temp_image, param)
             elif filter_name == "Filtro Homomorphic":

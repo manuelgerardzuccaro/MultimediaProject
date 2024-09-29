@@ -234,6 +234,182 @@ class LogGeometricMeanFilterDialog(QDialog):
         self.close()
 
 
+class GaussianFilterDialog(QDialog):
+    def __init__(self, parent, apply_callback):
+        super().__init__(parent)
+        self.setWindowTitle("Filtro Gaussiano")
+
+        layout = QVBoxLayout(self)
+
+        # Slider per la dimensione del kernel
+        self.kernel_size_slider = QSlider(Qt.Horizontal)
+        self.kernel_size_slider.setMinimum(1)
+        self.kernel_size_slider.setMaximum(15)
+        self.kernel_size_slider.setValue(5)
+        self.kernel_size_label = QLabel(f"Kernel Size: {self.kernel_size_slider.value()}", self)
+        self.kernel_size_slider.valueChanged.connect(
+            lambda: self.kernel_size_label.setText(f"Kernel Size: {self.kernel_size_slider.value()}")
+        )
+
+        layout.addWidget(self.kernel_size_label)
+        layout.addWidget(self.kernel_size_slider)
+
+        # Slider per il valore di sigma
+        self.sigma_slider = QSlider(Qt.Horizontal)
+        self.sigma_slider.setMinimum(1)
+        self.sigma_slider.setMaximum(50)
+        self.sigma_slider.setValue(10)
+        self.sigma_label = QLabel(f"Sigma: {self.sigma_slider.value() / 10.0}", self)
+        self.sigma_slider.valueChanged.connect(
+            lambda: self.sigma_label.setText(f"Sigma: {self.sigma_slider.value() / 10.0}")
+        )
+
+        layout.addWidget(self.sigma_label)
+        layout.addWidget(self.sigma_slider)
+
+        # Pulsante Applica
+        button_layout = QHBoxLayout()
+        apply_button = QPushButton('Applica', self)
+        apply_button.clicked.connect(self.apply_filter)
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton('Cancella', self)
+        cancel_button.clicked.connect(self.close)
+        button_layout.addWidget(cancel_button)
+
+        layout.addLayout(button_layout)
+
+        self.apply_callback = apply_callback
+
+    def apply_filter(self):
+        kernel_size = self.kernel_size_slider.value()
+        sigma = self.sigma_slider.value() / 10.0
+        self.apply_callback(kernel_size, sigma)
+        self.close()
+
+
+class ContraHarmonicMeanFilterDialog(QDialog):
+    def __init__(self, parent, apply_callback):
+        super().__init__(parent)
+        self.setWindowTitle("Filtro Contra-Harmonic Mean")
+
+        layout = QVBoxLayout(self)
+
+        # Slider per la dimensione del kernel
+        self.kernel_size_slider = QSlider(Qt.Horizontal)
+        self.kernel_size_slider.setMinimum(1)
+        self.kernel_size_slider.setMaximum(15)
+        self.kernel_size_slider.setValue(3)
+        self.kernel_size_label = QLabel(f"Kernel Size: {self.kernel_size_slider.value()}", self)
+        self.kernel_size_slider.valueChanged.connect(
+            lambda: self.kernel_size_label.setText(f"Kernel Size: {self.kernel_size_slider.value()}")
+        )
+
+        layout.addWidget(self.kernel_size_label)
+        layout.addWidget(self.kernel_size_slider)
+
+        # Slider per il valore di Q
+        self.q_slider = QSlider(Qt.Horizontal)
+        self.q_slider.setMinimum(-50)
+        self.q_slider.setMaximum(50)
+        self.q_slider.setValue(10)
+        self.q_label = QLabel(f"Q: {self.q_slider.value() / 10.0}", self)
+        self.q_slider.valueChanged.connect(
+            lambda: self.q_label.setText(f"Q: {self.q_slider.value() / 10.0}")
+        )
+
+        layout.addWidget(self.q_label)
+        layout.addWidget(self.q_slider)
+
+        # Pulsante Applica
+        button_layout = QHBoxLayout()
+        apply_button = QPushButton('Applica', self)
+        apply_button.clicked.connect(self.apply_filter)
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton('Cancella', self)
+        cancel_button.clicked.connect(self.close)
+        button_layout.addWidget(cancel_button)
+
+        layout.addLayout(button_layout)
+
+        self.apply_callback = apply_callback
+
+    def apply_filter(self):
+        kernel_size = self.kernel_size_slider.value()
+        Q_value = self.q_slider.value() / 10.0
+        self.apply_callback(kernel_size, Q_value)
+        self.close()
+
+
+class NotchFilterDialog(QDialog):
+    def __init__(self, parent, apply_callback):
+        super().__init__(parent)
+        self.setWindowTitle("Filtro Notch")
+
+        layout = QVBoxLayout(self)
+
+        # Slider per il valore di d0
+        self.d0_slider = QSlider(Qt.Horizontal)
+        self.d0_slider.setMinimum(1)
+        self.d0_slider.setMaximum(100)
+        self.d0_slider.setValue(30)
+        self.d0_label = QLabel(f"d0: {self.d0_slider.value()}", self)
+        self.d0_slider.valueChanged.connect(
+            lambda: self.d0_label.setText(f"d0: {self.d0_slider.value()}")
+        )
+
+        layout.addWidget(self.d0_label)
+        layout.addWidget(self.d0_slider)
+
+        # Slider per il valore di u_k
+        self.u_k_slider = QSlider(Qt.Horizontal)
+        self.u_k_slider.setMinimum(-100)
+        self.u_k_slider.setMaximum(100)
+        self.u_k_slider.setValue(30)
+        self.u_k_label = QLabel(f"u_k: {self.u_k_slider.value()}", self)
+        self.u_k_slider.valueChanged.connect(
+            lambda: self.u_k_label.setText(f"u_k: {self.u_k_slider.value()}")
+        )
+
+        layout.addWidget(self.u_k_label)
+        layout.addWidget(self.u_k_slider)
+
+        # Slider per il valore di v_k
+        self.v_k_slider = QSlider(Qt.Horizontal)
+        self.v_k_slider.setMinimum(-100)
+        self.v_k_slider.setMaximum(100)
+        self.v_k_slider.setValue(30)
+        self.v_k_label = QLabel(f"v_k: {self.v_k_slider.value()}", self)
+        self.v_k_slider.valueChanged.connect(
+            lambda: self.v_k_label.setText(f"v_k: {self.v_k_slider.value()}")
+        )
+
+        layout.addWidget(self.v_k_label)
+        layout.addWidget(self.v_k_slider)
+
+        # Pulsante Applica
+        button_layout = QHBoxLayout()
+        apply_button = QPushButton('Applica', self)
+        apply_button.clicked.connect(self.apply_filter)
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton('Cancella', self)
+        cancel_button.clicked.connect(self.close)
+        button_layout.addWidget(cancel_button)
+
+        layout.addLayout(button_layout)
+
+        self.apply_callback = apply_callback
+
+    def apply_filter(self):
+        d0 = self.d0_slider.value()
+        u_k = [self.u_k_slider.value()]
+        v_k = [self.v_k_slider.value()]
+        self.apply_callback(d0, u_k, v_k)
+        self.close()
+
+
 class AnisotropicDiffusionDialog(QDialog):
     def __init__(self, parent, apply_callback):
         super().__init__(parent)

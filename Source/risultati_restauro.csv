@@ -1,1 +1,5 @@
-ID,NomeFile,NomeFiltro,Parametri,PSNR
+ID,NomeFile,NomeFiltro,Parametri,PSNR,MSE,SSIM
+1,ali.jpg,Rumore Sale e Pepe,None,12.218430216039994,6.5967914764079145,0.16154528913010902
+2,fotografo.jpg,Filtro Contra-Harmonic Mean,kernel_size=3; Q=-0.4,9.518006586664532,95.92651162790698,0.17417608736516413
+2,fotografo.jpg,Filtro MedianBlur,3,9.518006586664532,95.92651162790698,0.17417608736516413
+2,fotografo.jpg,Filtro Gaussiano,kernel_size=5; sigma=1.0,9.518006586664532,95.92651162790698,0.17417608736516413

@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt, QSize
 from filter_worker import FilterWorker
 from filter_dialogs import *
 from image_manager import load_image, convert_to_rgb, display_image, show_image_zoomed, save_image
-from utils import save_filter_configuration, load_filter_configuration, calculate_psnr
+from utils import save_filter_configuration, load_filter_configuration, calculate_psnr, calculate_mse, calculate_ssim
 from filter_item_widget import FilterItemWidget
 import sys
 
@@ -99,6 +99,9 @@ class ImageRestorationApp(QMainWindow):
         filter_menu.addAction('Filtro Media Aritmetica', self.show_mean_filter_dialog)
         filter_menu.addAction('Filtro Media Geometrica', self.show_geometric_mean_filter_dialog)
         filter_menu.addAction('Filtro Media Geometrica Logaritmica', self.show_log_geometric_mean_filter_dialog)
+        filter_menu.addAction('Filtro Gaussiano', self.show_gaussian_filter_dialog)
+        filter_menu.addAction('Filtro Contra-Harmonic Mean', self.show_contra_harmonic_mean_filter_dialog)
+        filter_menu.addAction('Filtro Notch', self.show_notch_filter_dialog)
         filter_menu.addAction('Filtro Shock', self.show_shock_filter_dialog)
         filter_menu.addAction('Filtro Homomorphic', self.show_homomorphic_filter_dialog)
         filter_menu.addAction('Filtro Diffusione Anisotropica', self.show_anisotropic_diffusion_dialog)
@@ -171,8 +174,10 @@ class ImageRestorationApp(QMainWindow):
         if original_image.shape != restored_image.shape:
             restored_image = cv2.resize(restored_image, (original_image.shape[1], original_image.shape[0]))
 
-        # Calcola il PSNR tra l'immagine originale e quella restaurata
+        # Calcola il PSNR, MSE e SSIM tra l'immagine originale e quella restaurata
         psnr_value = calculate_psnr(original_image, restored_image)
+        mse_value = calculate_mse(original_image, restored_image)
+        ssim_value = calculate_ssim(original_image, restored_image)
 
         # Verifica se il file CSV esiste già
         file_exists = os.path.isfile(csv_filename)
@@ -183,7 +188,7 @@ class ImageRestorationApp(QMainWindow):
 
             # Scrive l'intestazione solo se il file non esiste
             if not file_exists:
-                writer.writerow(["ID", "NomeFile", "NomeFiltro", "Parametri", "PSNR"])
+                writer.writerow(["ID", "NomeFile", "NomeFiltro", "Parametri", "PSNR", "MSE", "SSIM"])
 
             # Aggiunge i dati per ciascun filtro applicato
             for filter_name, params in filters:
@@ -194,7 +199,8 @@ class ImageRestorationApp(QMainWindow):
                     filter_data = str(params)
 
                 # Scrive la riga con l'ID passato come parametro
-                writer.writerow([image_id, image_name, filter_name, filter_data, psnr_value])
+                writer.writerow([image_id, image_name, filter_name, filter_data, psnr_value, mse_value, ssim_value])
+                print(f"Risultati salvati nel CSV per l'immagine: {image_name}")
 
     def save_restored_image(self):
         if self.restored_image is not None:
@@ -219,7 +225,6 @@ class ImageRestorationApp(QMainWindow):
                 # Salva i risultati nel CSV con l'ID univoco
                 image_name = fileName.split('/')[-1]  # Estrai il nome dell'immagine dal percorso
                 self.log_filter_results(image_name, self.applied_filters, self.restored_image, image_id)
-                print(f"Risultati salvati nel CSV per l'immagine: {image_name}")
 
     def save_filter_configuration_action(self):
         options = QFileDialog.Options()
@@ -256,6 +261,18 @@ class ImageRestorationApp(QMainWindow):
 
     def show_log_geometric_mean_filter_dialog(self):
         dialog = LogGeometricMeanFilterDialog(self, self.apply_log_geometric_mean_filter)
+        dialog.exec_()
+
+    def show_gaussian_filter_dialog(self):
+        dialog = GaussianFilterDialog(self, self.apply_gaussian_filter)
+        dialog.exec_()
+
+    def show_contra_harmonic_mean_filter_dialog(self):
+        dialog = ContraHarmonicMeanFilterDialog(self, self.apply_contra_harmonic_mean_filter)
+        dialog.exec_()
+
+    def show_notch_filter_dialog(self):
+        dialog = NotchFilterDialog(self, self.apply_notch_filter)
         dialog.exec_()
 
     def show_shock_filter_dialog(self):
@@ -301,6 +318,21 @@ class ImageRestorationApp(QMainWindow):
 
     def apply_log_geometric_mean_filter(self, kernel_size):
         self.applied_filters.append(('Filtro Media Geometrica Logaritmica', kernel_size))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_gaussian_filter(self, kernel_size, sigma):
+        self.applied_filters.append(('Filtro Gaussiano', {'kernel_size': kernel_size, 'sigma': sigma}))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_contra_harmonic_mean_filter(self, kernel_size, Q):
+        self.applied_filters.append(('Filtro Contra-Harmonic Mean', {'kernel_size': kernel_size, 'Q': Q}))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_notch_filter(self, d0, u_k, v_k):
+        self.applied_filters.append(('Filtro Notch', {'d0': d0, 'u_k': u_k, 'v_k': v_k}))
         self.update_filter_list()
         self.apply_all_filters()
 

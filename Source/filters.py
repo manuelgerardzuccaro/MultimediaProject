@@ -128,9 +128,21 @@ def log_geometric_mean_filter(image, kernel_size=3):
     return filtered_image
 
 
+def gaussian_filter(image, kernel_size=5, sigma=1.0):
+    # Assicura che il kernel sia un numero dispari
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+    # Applica il filtro gaussiano
+    return cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
+
+
 def contra_harmonic_mean_filter(image, kernel_size=3, Q=1.0):
     if kernel_size < 1:
         kernel_size = 3
+
+    # Assicura che il kernel sia dispari
+    if kernel_size % 2 == 0:
+        kernel_size += 1
 
     pad_size = kernel_size // 2
     padded_image = cv2.copyMakeBorder(image, pad_size, pad_size, pad_size, pad_size, cv2.BORDER_REFLECT)
@@ -141,10 +153,14 @@ def contra_harmonic_mean_filter(image, kernel_size=3, Q=1.0):
         for j in range(pad_size, padded_image.shape[1] - pad_size):
             window = padded_image[i - pad_size:i + pad_size + 1, j - pad_size:j + pad_size + 1]
 
+            # Evita problemi con divisioni per zero, sostituendo i valori 0 con un piccolo numero
+            window = np.where(window == 0, 1e-10, window)  # Sostituisci 0 con un numero piccolo
+
             num = np.sum(window ** (Q + 1))
             den = np.sum(window ** Q)
 
-            if den != 0:
+            # Gestisce casi in cui den è 0 o non valido
+            if den != 0 and not np.isnan(den):
                 filtered_image[i - pad_size, j - pad_size] = num / den
             else:
                 filtered_image[i - pad_size, j - pad_size] = 0
@@ -154,29 +170,75 @@ def contra_harmonic_mean_filter(image, kernel_size=3, Q=1.0):
 
 
 def notch_filter(image, d0, u_k, v_k):
-    # trasformata di Fourier
-    dft = np.fft.fft2(image)
-    dft_shift = np.fft.fftshift(dft)
+    # Controlla se l'immagine ha 3 canali (colori)
+    if len(image.shape) == 3:
+        # Separa i canali (B, G, R)
+        channels = cv2.split(image)
+        filtered_channels = []
 
-    rows, cols = image.shape
-    crow, ccol = rows // 2, cols // 2
+        for ch in channels:
+            # Applica il filtro notch al canale
+            dft = np.fft.fft2(ch)
+            dft_shift = np.fft.fftshift(dft)
 
-    for u, v in zip(u_k, v_k):
-        # distanza euclidea dal punto (u, v) e (-u, -v)
-        for i in range(rows):
-            for j in range(cols):
-                duv = np.sqrt((i - (crow + u)) ** 2 + (j - (ccol + v)) ** 2)
-                duv_neg = np.sqrt((i - (crow - u)) ** 2 + (j - (ccol - v)) ** 2)
+            rows, cols = ch.shape
+            crow, ccol = rows // 2, cols // 2
 
-                if duv < d0 or duv_neg < d0:
-                    dft_shift[i, j] = 0
+            # Crea la maschera
+            mask = np.ones((rows, cols), np.float32)
 
-    # inverso della trasformata di Fourier
-    f_ishift = np.fft.ifftshift(dft_shift)
-    img_back = np.fft.ifft2(f_ishift)
-    img_back = np.abs(img_back)
+            for u, v in zip(u_k, v_k):
+                for i in range(rows):
+                    for j in range(cols):
+                        duv = np.sqrt((i - (crow + u)) ** 2 + (j - (ccol + v)) ** 2)
+                        duv_neg = np.sqrt((i - (crow - u)) ** 2 + (j - (ccol - v)) ** 2)
 
-    return np.clip(img_back, 0, 255).astype(np.uint8)
+                        if duv < d0 or duv_neg < d0:
+                            mask[i, j] = 0
+
+            # Applica la maschera
+            dft_shift_filtered = dft_shift * mask
+
+            # Inversa della trasformata di Fourier
+            f_ishift = np.fft.ifftshift(dft_shift_filtered)
+            img_back = np.fft.ifft2(f_ishift)
+            img_back = np.abs(img_back)
+
+            # Aggiungi il canale filtrato alla lista
+            filtered_channels.append(np.clip(img_back, 0, 255).astype(np.uint8))
+
+        # Combina i canali filtrati in un'unica immagine a colori
+        return cv2.merge(filtered_channels)
+
+    else:  # Immagine in scala di grigi
+        # Applica il filtro direttamente
+        dft = np.fft.fft2(image)
+        dft_shift = np.fft.fftshift(dft)
+
+        rows, cols = image.shape
+        crow, ccol = rows // 2, cols // 2
+
+        # Crea la maschera
+        mask = np.ones((rows, cols), np.float32)
+
+        for u, v in zip(u_k, v_k):
+            for i in range(rows):
+                for j in range(cols):
+                    duv = np.sqrt((i - (crow + u)) ** 2 + (j - (ccol + v)) ** 2)
+                    duv_neg = np.sqrt((i - (crow - u)) ** 2 + (j - (ccol - v)) ** 2)
+
+                    if duv < d0 or duv_neg < d0:
+                        mask[i, j] = 0
+
+        # Applica la maschera
+        dft_shift_filtered = dft_shift * mask
+
+        # Inversa della trasformata di Fourier
+        f_ishift = np.fft.ifftshift(dft_shift_filtered)
+        img_back = np.fft.ifft2(f_ishift)
+        img_back = np.abs(img_back)
+
+        return np.clip(img_back, 0, 255).astype(np.uint8)
 
 
 def shock_filter(image, iterations=10, dt=0.1):
@@ -367,12 +429,21 @@ def wiener_deconvolution(image, kernel_size=5):
 
 # rumori
 
-def add_gaussian_noise(image):
-    mean = 0
-    std_dev = 25  # intensità del rumore
-    noise = np.random.normal(mean, std_dev, image.shape).astype(np.uint8)
-    noisy_image = cv2.add(image, noise)
-    return noisy_image
+def add_gaussian_noise(image, mean=0, std_dev=25):
+    # Converti l'immagine in formato float32 per evitare overflow durante l'aggiunta del rumore
+    image_float = image.astype(np.float32)
+
+    # Crea il rumore gaussiano
+    noise = np.random.normal(mean, std_dev, image.shape).astype(np.float32)
+
+    # Aggiungi il rumore all'immagine
+    noisy_image = image_float + noise
+
+    # Clipping per assicurare che i valori siano nel range [0, 255]
+    noisy_image = np.clip(noisy_image, 0, 255)
+
+    # Converti nuovamente l'immagine in uint8
+    return noisy_image.astype(np.uint8)
 
 
 def add_salt_pepper_noise(image):
@@ -405,13 +476,27 @@ def add_film_grain_noise(image):
     return noisy_image
 
 
-def add_periodic_noise(image):
-    # rumore periodico sinusoidale
+def add_periodic_noise(image, amplitude=150):
+    # Crea un'immagine float per evitare overflow
+    noisy_image = image.astype(np.float32)
+
+    # Dimensioni dell'immagine
     row, col, ch = image.shape
+
+    # Crea il rumore periodico (sinusoidale) lungo la larghezza
     periodic_noise = np.sin(np.linspace(0, 2 * np.pi, col))
+
+    # Estendi il rumore periodico lungo l'altezza dell'immagine
     periodic_noise = np.tile(periodic_noise, (row, 1))
+
+    # Aggiungi il rumore a ogni canale dell'immagine
     for i in range(ch):
-        image[:, :, i] = cv2.add(image[:, :, i], (periodic_noise * 50).astype(np.uint8))
-    return image
+        noisy_image[:, :, i] += (periodic_noise * amplitude)
+
+    # Clippa i valori per essere nell'intervallo [0, 255]
+    noisy_image = np.clip(noisy_image, 0, 255)
+
+    # Converti nuovamente a uint8
+    return noisy_image.astype(np.uint8)
 
 # altri rumori...
