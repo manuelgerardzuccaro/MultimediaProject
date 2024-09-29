@@ -2,7 +2,8 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 
 from filters import median_filter, mean_filter, shock_filter, homomorphic_filter, anisotropic_diffusion, \
-    median_blur_filter, geometric_mean_filter, log_geometric_mean_filter, l1_tv_deconvolution, wiener_deconvolution
+    median_blur_filter, geometric_mean_filter, log_geometric_mean_filter, l1_tv_deconvolution, wiener_deconvolution, \
+    add_gaussian_noise, add_salt_pepper_noise, add_uniform_noise, add_film_grain_noise, add_periodic_noise
 
 
 class FilterWorker(QThread):
@@ -37,6 +38,16 @@ class FilterWorker(QThread):
                 temp_image = l1_tv_deconvolution(temp_image, iterations=param['iterations'], regularization_weight=param['regularization_weight'])
             elif filter_name == "Deconvoluzione Wiener":
                 temp_image = wiener_deconvolution(temp_image, param)
+            elif filter_name == "Rumore Gaussiano":
+                temp_image = add_gaussian_noise(temp_image)
+            elif filter_name == "Rumore Sale e Pepe":
+                temp_image = add_salt_pepper_noise(temp_image)
+            elif filter_name == "Rumore Uniforme":
+                temp_image = add_uniform_noise(temp_image)
+            elif filter_name == "Rumore Grana della Pellicola":
+                temp_image = add_film_grain_noise(temp_image)
+            elif filter_name == "Rumore Periodico":
+                temp_image = add_periodic_noise(temp_image)
 
         if self._is_running:  # check se l'operazione è ancora valida
             self.filter_applied.emit(temp_image)

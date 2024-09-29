@@ -1,9 +1,21 @@
-﻿import cv2
+﻿from skimage.metrics import structural_similarity as ssim
+import numpy as np
+import cv2
 import json
 
 
 def calculate_psnr(original, restored):
     return cv2.PSNR(original, restored)
+
+
+def calculate_mse(original, restored):
+    mse_value = np.mean((original - restored) ** 2)
+    return mse_value
+
+
+def calculate_ssim(original, restored):
+    ssim_value, _ = ssim(original, restored, full=True, multichannel=True)
+    return ssim_value
 
 
 def save_image(image, path):

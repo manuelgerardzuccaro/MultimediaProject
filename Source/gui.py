@@ -105,6 +105,15 @@ class ImageRestorationApp(QMainWindow):
         filter_menu.addAction('Deconvoluzione ℓ1-TV', self.show_l1_tv_deconvolution_dialog)
         filter_menu.addAction('Deconvoluzione Wiener', self.show_wiener_deconvolution_dialog)
 
+        # barra menu - rumori
+        noise_menu = menubar.addMenu('Rumori')
+
+        noise_menu.addAction('Rumore Gaussiano', self.apply_gaussian_noise)
+        noise_menu.addAction('Rumore Sale e Pepe', self.apply_salt_pepper_noise)
+        noise_menu.addAction('Rumore Uniforme', self.apply_uniform_noise)
+        noise_menu.addAction('Rumore Grana della Pellicola', self.apply_film_grain_noise)
+        noise_menu.addAction('Rumore Periodico', self.apply_periodic_noise)
+
         # shortcut Undo e Redo
         undo_shortcut = QAction('Undo', self)
         undo_shortcut.setShortcut(QKeySequence("Ctrl+Z"))
@@ -319,6 +328,31 @@ class ImageRestorationApp(QMainWindow):
 
     def apply_wiener_deconvolution(self, kernel_size):
         self.applied_filters.append(('Deconvoluzione Wiener', kernel_size))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_gaussian_noise(self):
+        self.applied_filters.append(('Rumore Gaussiano', None))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_salt_pepper_noise(self):
+        self.applied_filters.append(('Rumore Sale e Pepe', None))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_uniform_noise(self):
+        self.applied_filters.append(('Rumore Uniforme', None))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_film_grain_noise(self):
+        self.applied_filters.append(('Rumore Grana della Pellicola', None))
+        self.update_filter_list()
+        self.apply_all_filters()
+
+    def apply_periodic_noise(self):
+        self.applied_filters.append(('Rumore Periodico', None))
         self.update_filter_list()
         self.apply_all_filters()
 
