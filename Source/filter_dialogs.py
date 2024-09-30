@@ -1,5 +1,6 @@
 ﻿from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QPushButton, QRadioButton
+from PyQt5.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QSlider, QPushButton, QRadioButton, QListWidget, \
+    QLineEdit, QMessageBox
 
 
 class HomomorphicFilterDialog(QDialog):
@@ -362,31 +363,17 @@ class NotchFilterDialog(QDialog):
         layout.addWidget(self.d0_label)
         layout.addWidget(self.d0_slider)
 
-        # Slider per il valore di u_k
-        self.u_k_slider = QSlider(Qt.Horizontal)
-        self.u_k_slider.setMinimum(-100)
-        self.u_k_slider.setMaximum(100)
-        self.u_k_slider.setValue(30)
-        self.u_k_label = QLabel(f"u_k: {self.u_k_slider.value()}", self)
-        self.u_k_slider.valueChanged.connect(
-            lambda: self.u_k_label.setText(f"u_k: {self.u_k_slider.value()}")
-        )
+        # Input per u_k
+        self.uk_input = QLineEdit(self)
+        self.uk_input.setPlaceholderText("Inserisci u_k (es. 10, -10)")
+        layout.addWidget(QLabel("u_k (lista di valori separati da virgola):"))
+        layout.addWidget(self.uk_input)
 
-        layout.addWidget(self.u_k_label)
-        layout.addWidget(self.u_k_slider)
-
-        # Slider per il valore di v_k
-        self.v_k_slider = QSlider(Qt.Horizontal)
-        self.v_k_slider.setMinimum(-100)
-        self.v_k_slider.setMaximum(100)
-        self.v_k_slider.setValue(30)
-        self.v_k_label = QLabel(f"v_k: {self.v_k_slider.value()}", self)
-        self.v_k_slider.valueChanged.connect(
-            lambda: self.v_k_label.setText(f"v_k: {self.v_k_slider.value()}")
-        )
-
-        layout.addWidget(self.v_k_label)
-        layout.addWidget(self.v_k_slider)
+        # Input per v_k
+        self.vk_input = QLineEdit(self)
+        self.vk_input.setPlaceholderText("Inserisci v_k (es. 0, 0)")
+        layout.addWidget(QLabel("v_k (lista di valori separati da virgola):"))
+        layout.addWidget(self.vk_input)
 
         # Pulsante Applica
         button_layout = QHBoxLayout()
@@ -403,11 +390,24 @@ class NotchFilterDialog(QDialog):
         self.apply_callback = apply_callback
 
     def apply_filter(self):
-        d0 = self.d0_slider.value()
-        u_k = [self.u_k_slider.value()]
-        v_k = [self.v_k_slider.value()]
-        self.apply_callback(d0, u_k, v_k)
-        self.close()
+        try:
+            # Leggi il valore di d0
+            d0 = self.d0_slider.value()
+
+            # Converti gli input delle liste in array di interi
+            u_k = list(map(int, self.uk_input.text().split(',')))
+            v_k = list(map(int, self.vk_input.text().split(',')))
+
+            # Controlla se le liste di u_k e v_k hanno la stessa lunghezza
+            if len(u_k) != len(v_k):
+                raise ValueError("Le liste di u_k e v_k devono avere la stessa lunghezza.")
+
+            # Applica il filtro con le coppie inserite dall'utente
+            self.apply_callback(d0, u_k, v_k)
+            self.close()
+        except ValueError as e:
+            # Mostra un messaggio di errore in caso di input non valido
+            QMessageBox.critical(self, "Errore", f"Input non valido: {str(e)}")
 
 
 class AnisotropicDiffusionDialog(QDialog):
