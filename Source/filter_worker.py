@@ -44,7 +44,7 @@ class FilterWorker(QThread):
             elif filter_name == "Deconvoluzione ℓ1-TV":
                 temp_image = l1_tv_deconvolution(temp_image, iterations=param['iterations'], regularization_weight=param['regularization_weight'])
             elif filter_name == "Deconvoluzione Wiener":
-                temp_image = wiener_deconvolution(temp_image, param)
+                temp_image = wiener_deconvolution(temp_image, param['kernel_size'], param['noise'])
             elif filter_name == "Rumore Gaussiano":
                 temp_image = add_gaussian_noise(temp_image)
             elif filter_name == "Rumore Sale e Pepe":

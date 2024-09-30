@@ -437,8 +437,9 @@ def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
     return cv2.merge(restored_channels) if len(restored_channels) > 1 else restored_channels[0]
 
 
-def wiener_deconvolution(image, kernel_size=5):
+def wiener_deconvolution(image, kernel_size=5, noise=0.01):
     epsilon = 1e-5  # Piccolo valore per prevenire divisioni per zero
+    pad_size = kernel_size // 2  # Determina la dimensione del padding
 
     if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
@@ -447,19 +448,22 @@ def wiener_deconvolution(image, kernel_size=5):
 
     deconvolved_channels = []
     for img in images:
-        # Normalizza l'immagine nell'intervallo [0, 1]
-        img = img.astype(np.float32) / 255.0
+        padded_image = cv2.copyMakeBorder(img, pad_size, pad_size, pad_size, pad_size, cv2.BORDER_REFLECT)
 
-        # Applicazione del filtro di Wiener per la deconvoluzione
-        deconvolved_img = wiener(img, (kernel_size, kernel_size), epsilon)
+        # Normalizza l'immagine nell'intervallo [0, 1]
+        padded_image = padded_image.astype(np.float32) / 255.0
+
+        deconvolved_img = wiener(padded_image, (kernel_size, kernel_size), noise + epsilon)
 
         # Gestione di NaN e valori infiniti
         deconvolved_img = np.nan_to_num(deconvolved_img)
 
+        # Rimuovi il padding
+        deconvolved_img = deconvolved_img[pad_size:-pad_size, pad_size:-pad_size]
+
         # Riportare i valori nell'intervallo [0, 1]
         deconvolved_img = np.clip(deconvolved_img, 0, 1)
 
-        # Converti i valori in uint8
         deconvolved_img = (deconvolved_img * 255).astype(np.uint8)
         deconvolved_channels.append(deconvolved_img)
 

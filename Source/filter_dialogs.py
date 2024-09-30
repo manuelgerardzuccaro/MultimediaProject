@@ -515,3 +515,55 @@ class L1TVDeconvolutionDialog(QDialog):
         regularization_weight = self.reg_weight_slider.value() / 100.0
         self.apply_callback(iterations, regularization_weight)
         self.close()
+
+
+class WienerFilterDialog(QDialog):
+    def __init__(self, parent, apply_callback):
+        super().__init__(parent)
+        self.setWindowTitle("Filtro Wiener")
+
+        layout = QVBoxLayout(self)
+
+        # Slider per la dimensione del kernel
+        self.kernel_size_slider = QSlider(Qt.Horizontal)
+        self.kernel_size_slider.setMinimum(1)
+        self.kernel_size_slider.setMaximum(15)
+        self.kernel_size_slider.setValue(5)
+        self.kernel_size_label = QLabel(f"Kernel Size: {self.kernel_size_slider.value()}", self)
+        self.kernel_size_slider.valueChanged.connect(
+            lambda: self.kernel_size_label.setText(f"Kernel Size: {self.kernel_size_slider.value()}"))
+
+        layout.addWidget(self.kernel_size_label)
+        layout.addWidget(self.kernel_size_slider)
+
+        # Slider per il rumore
+        self.noise_slider = QSlider(Qt.Horizontal)
+        self.noise_slider.setMinimum(1)
+        self.noise_slider.setMaximum(100)
+        self.noise_slider.setValue(10)
+        self.noise_label = QLabel(f"Rumore: {self.noise_slider.value() / 100.0}", self)
+        self.noise_slider.valueChanged.connect(
+            lambda: self.noise_label.setText(f"Rumore: {self.noise_slider.value() / 100.0}"))
+
+        layout.addWidget(self.noise_label)
+        layout.addWidget(self.noise_slider)
+
+        # Pulsanti Applica e Cancella
+        button_layout = QHBoxLayout()
+        apply_button = QPushButton('Applica', self)
+        apply_button.clicked.connect(self.apply_filter)
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton('Cancella', self)
+        cancel_button.clicked.connect(self.close)
+        button_layout.addWidget(cancel_button)
+
+        layout.addLayout(button_layout)
+
+        self.apply_callback = apply_callback
+
+    def apply_filter(self):
+        kernel_size = self.kernel_size_slider.value()
+        noise = self.noise_slider.value() / 100.0
+        self.apply_callback(kernel_size, noise)
+        self.close()
