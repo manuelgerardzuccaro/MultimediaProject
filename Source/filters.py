@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.ndimage import convolve
 from scipy.signal import wiener
+from utils import is_grayscale
 
 
 def median_filter(image, ksize):
@@ -14,7 +15,7 @@ def median_filter(image, ksize):
 
     pad_size = ksize // 2
 
-    if len(image.shape) == 2:  # immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         padded_image = cv2.copyMakeBorder(image, pad_size, pad_size, pad_size, pad_size, cv2.BORDER_REFLECT)
         filtered_image = np.zeros_like(image)
 
@@ -61,7 +62,7 @@ def mean_filter(image, kernel_size=3):
     # Creato un kernel di dimensione kernel_size X kernel_size
     kernel = np.ones((kernel_size, kernel_size), np.float32) / (kernel_size * kernel_size)
 
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image):  # Immagine in scala di grigi
         return cv2.filter2D(image, -1, kernel)
     else:  # Immagine a colori
         channels = cv2.split(image)
@@ -78,7 +79,7 @@ def geometric_mean_filter(image, kernel_size=3):
     pad_size = kernel_size // 2
     epsilon = 1e-5  # piccolo valore per evitare log(0)
 
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image): # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -112,7 +113,7 @@ def log_geometric_mean_filter(image, kernel_size=3):
     pad_size = kernel_size // 2  # divisione intera
     epsilon = 1e-5  # piccolo valore per evitare log(0)
 
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -151,7 +152,7 @@ def contra_harmonic_mean_filter(image, kernel_size=3, Q=1.0):
 
     pad_size = kernel_size // 2
 
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -181,7 +182,7 @@ def contra_harmonic_mean_filter(image, kernel_size=3, Q=1.0):
 
 def notch_filter(image, d0, u_k, v_k):
     # Controlla se l'immagine ha 3 canali (colori)
-    if len(image.shape) == 3:
+    if not is_grayscale(image):
         # Separa i canali (B, G, R)
         channels = cv2.split(image)
         filtered_channels = []
@@ -253,7 +254,7 @@ def notch_filter(image, d0, u_k, v_k):
 
 def shock_filter(image, iterations=10, dt=0.1):
     # Verifica se l'immagine è in scala di grigi o a colori
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image): # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -282,7 +283,7 @@ def shock_filter(image, iterations=10, dt=0.1):
 
 
 def homomorphic_filter(image, low=0.5, high=1.5, cutoff=30):
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -339,7 +340,7 @@ def anisotropic_diffusion(image, iterations=10, k=15, gamma=0.1, option=1):
     """
 
     # se immagine a colori (canali separati)
-    if len(image.shape) == 3:
+    if not is_grayscale(image):
         b, g, r = cv2.split(image)
 
         # applicazione del filtro anisotropic su ciascun canale
@@ -394,7 +395,7 @@ def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
 
 
 def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -437,7 +438,7 @@ def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
 
 
 def wiener_deconvolution(image, kernel_size=5):
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -462,7 +463,7 @@ def wiener_deconvolution(image, kernel_size=5):
 
 def add_gaussian_noise(image, mean=0, std_dev=25):
     # Converti l'immagine in formato float32 per evitare overflow durante l'aggiunta del rumore
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -488,14 +489,14 @@ def add_salt_pepper_noise(image, prob=0.05):
 
     # Aggiungi "sale" (bianco)
     coords = [np.random.randint(0, i - 1, num_salt) for i in image.shape[:2]]
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image): # Immagine in scala di grigi
         noisy_image[coords[0], coords[1]] = 255
     else:  # Immagine a colori
         noisy_image[coords[0], coords[1], :] = 255
 
     # Aggiungi "pepe" (nero)
     coords = [np.random.randint(0, i - 1, num_pepper) for i in image.shape[:2]]
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image): # Immagine in scala di grigi
         noisy_image[coords[0], coords[1]] = 0
     else:  # Immagine a colori
         noisy_image[coords[0], coords[1], :] = 0
@@ -504,7 +505,7 @@ def add_salt_pepper_noise(image, prob=0.05):
 
 
 def add_uniform_noise(image, low=0, high=50):
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -519,7 +520,7 @@ def add_uniform_noise(image, low=0, high=50):
 
 
 def add_film_grain_noise(image, std_dev=20):
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image): # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)
@@ -535,7 +536,7 @@ def add_film_grain_noise(image, std_dev=20):
 
 
 def add_periodic_noise(image, amplitude=50, frequency=40):
-    if len(image.shape) == 2:  # Immagine in scala di grigi
+    if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
         images = cv2.split(image)

@@ -49,6 +49,17 @@ def calculate_ssim(original, restored):
     return ssim_value
 
 
+def is_grayscale(image):
+    if len(image.shape) == 2:
+        # È già in scala di grigi
+        return True
+    elif len(image.shape) == 3 and image.shape[2] == 3:
+        # Controlla se tutti i canali sono identici
+        if np.all(image[:, :, 0] == image[:, :, 1]) and np.all(image[:, :, 0] == image[:, :, 2]):
+            return True
+    return False
+
+
 def save_image(image, path):
     cv2.imwrite(path, image)
 
