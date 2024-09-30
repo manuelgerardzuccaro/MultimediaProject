@@ -438,6 +438,8 @@ def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
 
 
 def wiener_deconvolution(image, kernel_size=5):
+    epsilon = 1e-5  # Piccolo valore per prevenire divisioni per zero
+
     if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
     else:  # Immagine a colori
@@ -445,14 +447,23 @@ def wiener_deconvolution(image, kernel_size=5):
 
     deconvolved_channels = []
     for img in images:
-        # Applicazione del filtro di Wiener per la deconvoluzione
-        deconvolved_img = wiener(img, (kernel_size, kernel_size))
+        # Normalizza l'immagine nell'intervallo [0, 1]
+        img = img.astype(np.float32) / 255.0
 
-        # Normalizzazione e conversione in uint8
-        deconvolved_img = np.clip(deconvolved_img * 255, 0, 255).astype(np.uint8)
+        # Applicazione del filtro di Wiener per la deconvoluzione
+        deconvolved_img = wiener(img, (kernel_size, kernel_size), epsilon)
+
+        # Gestione di NaN e valori infiniti
+        deconvolved_img = np.nan_to_num(deconvolved_img)
+
+        # Riportare i valori nell'intervallo [0, 1]
+        deconvolved_img = np.clip(deconvolved_img, 0, 1)
+
+        # Converti i valori in uint8
+        deconvolved_img = (deconvolved_img * 255).astype(np.uint8)
         deconvolved_channels.append(deconvolved_img)
 
-    # Combina i canali nel caso di un'immagine a colori, altrimenti restituisce il canale singolo
+    # Ricombina i canali nel caso di un'immagine a colori, altrimenti restituisce il canale singolo
     return cv2.merge(deconvolved_channels) if len(deconvolved_channels) > 1 else deconvolved_channels[0]
 
 
@@ -520,19 +531,26 @@ def add_uniform_noise(image, low=0, high=50):
 
 
 def add_film_grain_noise(image, std_dev=20):
-    if is_grayscale(image): # Immagine in scala di grigi
-        images = [image]
+    if is_grayscale(image):  # Immagine in scala di grigi
+        row, col = image.shape
+        noise = np.random.normal(0, std_dev, (row, col)).astype(np.int16)
+        img_int16 = image.astype(np.int16)
+        noisy_img = cv2.add(img_int16, noise)
+        noisy_img = np.clip(noisy_img, 0, 255).astype(np.uint8)
+        return noisy_img
+
     else:  # Immagine a colori
         images = cv2.split(image)
+        noisy_channels = []
+        for img in images:
+            row, col = img.shape
+            noise = np.random.normal(0, std_dev, (row, col)).astype(np.int16)
+            img_int16 = img.astype(np.int16)
+            noisy_img = cv2.add(img_int16, noise)
+            noisy_img = np.clip(noisy_img, 0, 255).astype(np.uint8)
+            noisy_channels.append(noisy_img)
 
-    noisy_channels = []
-    for img in images:
-        row, col = img.shape
-        noise = np.random.normal(0, std_dev, (row, col)).astype(np.uint8)
-        noisy_img = cv2.add(img, noise)
-        noisy_channels.append(noisy_img)
-
-    return cv2.merge(noisy_channels) if len(noisy_channels) > 1 else noisy_channels[0]
+        return cv2.merge(noisy_channels)
 
 
 def add_periodic_noise(image, amplitude=50, frequency=40):

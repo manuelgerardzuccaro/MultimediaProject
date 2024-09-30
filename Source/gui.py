@@ -9,7 +9,8 @@ from PyQt5.QtCore import Qt, QSize
 from filter_worker import FilterWorker
 from filter_dialogs import *
 from image_manager import load_image, convert_to_rgb, display_image, show_image_zoomed, save_image
-from utils import save_filter_configuration, load_filter_configuration, calculate_psnr, calculate_mse, calculate_ssim
+from utils import save_filter_configuration, load_filter_configuration, calculate_psnr, calculate_mse, calculate_ssim, \
+    is_grayscale
 from filter_item_widget import FilterItemWidget
 import sys
 
@@ -151,7 +152,12 @@ class ImageRestorationApp(QMainWindow):
         if fileName:
             self.image = load_image(fileName)
             self.restored_image = self.image
+
             if self.image is not None:
+
+                if is_grayscale(self.image):
+                    self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+
                 image_rgb = convert_to_rgb(self.image)
                 display_image(image_rgb, self.original_label)
                 self.restored_label.clear()
