@@ -177,7 +177,7 @@ class GeometricMeanFilterDialog(QDialog):
         self.kernel_size_slider = QSlider(Qt.Horizontal)
         self.kernel_size_slider.setMinimum(3)  # minimo kernel 3x3
         self.kernel_size_slider.setMaximum(15)  # massimo kernel 15x15
-        self.kernel_size_slider.setValue(3)  #valore iniziale
+        self.kernel_size_slider.setValue(3)  # valore iniziale
         self.kernel_size_label = QLabel(f"Kernel Size: {self.kernel_size_slider.value()}", self)
         self.kernel_size_slider.valueChanged.connect(
             lambda: self.kernel_size_label.setText(f"Kernel Size: {self.kernel_size_slider.value()}"))
@@ -242,7 +242,6 @@ class GaussianFilterDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        # Slider per la dimensione del kernel
         self.kernel_size_slider = QSlider(Qt.Horizontal)
         self.kernel_size_slider.setMinimum(1)
         self.kernel_size_slider.setMaximum(15)
@@ -255,7 +254,6 @@ class GaussianFilterDialog(QDialog):
         layout.addWidget(self.kernel_size_label)
         layout.addWidget(self.kernel_size_slider)
 
-        # Slider per il valore di sigma
         self.sigma_slider = QSlider(Qt.Horizontal)
         self.sigma_slider.setMinimum(1)
         self.sigma_slider.setMaximum(50)
@@ -268,7 +266,6 @@ class GaussianFilterDialog(QDialog):
         layout.addWidget(self.sigma_label)
         layout.addWidget(self.sigma_slider)
 
-        # Pulsante Applica
         button_layout = QHBoxLayout()
         apply_button = QPushButton('Applica', self)
         apply_button.clicked.connect(self.apply_filter)
@@ -296,7 +293,6 @@ class ContraHarmonicMeanFilterDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        # Slider per la dimensione del kernel
         self.kernel_size_slider = QSlider(Qt.Horizontal)
         self.kernel_size_slider.setMinimum(1)
         self.kernel_size_slider.setMaximum(15)
@@ -309,7 +305,6 @@ class ContraHarmonicMeanFilterDialog(QDialog):
         layout.addWidget(self.kernel_size_label)
         layout.addWidget(self.kernel_size_slider)
 
-        # Slider per il valore di Q
         self.q_slider = QSlider(Qt.Horizontal)
         self.q_slider.setMinimum(-50)
         self.q_slider.setMaximum(50)
@@ -322,7 +317,6 @@ class ContraHarmonicMeanFilterDialog(QDialog):
         layout.addWidget(self.q_label)
         layout.addWidget(self.q_slider)
 
-        # Pulsante Applica
         button_layout = QHBoxLayout()
         apply_button = QPushButton('Applica', self)
         apply_button.clicked.connect(self.apply_filter)
@@ -350,7 +344,6 @@ class NotchFilterDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        # Slider per il valore di d0
         self.d0_slider = QSlider(Qt.Horizontal)
         self.d0_slider.setMinimum(1)
         self.d0_slider.setMaximum(100)
@@ -363,19 +356,16 @@ class NotchFilterDialog(QDialog):
         layout.addWidget(self.d0_label)
         layout.addWidget(self.d0_slider)
 
-        # Input per u_k
         self.uk_input = QLineEdit(self)
         self.uk_input.setPlaceholderText("Inserisci u_k (es. 10, -10)")
         layout.addWidget(QLabel("u_k (lista di valori separati da virgola):"))
         layout.addWidget(self.uk_input)
 
-        # Input per v_k
         self.vk_input = QLineEdit(self)
         self.vk_input.setPlaceholderText("Inserisci v_k (es. 0, 0)")
         layout.addWidget(QLabel("v_k (lista di valori separati da virgola):"))
         layout.addWidget(self.vk_input)
 
-        # Pulsante Applica
         button_layout = QHBoxLayout()
         apply_button = QPushButton('Applica', self)
         apply_button.clicked.connect(self.apply_filter)
@@ -391,22 +381,17 @@ class NotchFilterDialog(QDialog):
 
     def apply_filter(self):
         try:
-            # Leggi il valore di d0
             d0 = self.d0_slider.value()
 
-            # Converti gli input delle liste in array di interi
             u_k = list(map(int, self.uk_input.text().split(',')))
             v_k = list(map(int, self.vk_input.text().split(',')))
 
-            # Controlla se le liste di u_k e v_k hanno la stessa lunghezza
             if len(u_k) != len(v_k):
                 raise ValueError("Le liste di u_k e v_k devono avere la stessa lunghezza.")
 
-            # Applica il filtro con le coppie inserite dall'utente
             self.apply_callback(d0, u_k, v_k)
             self.close()
         except ValueError as e:
-            # Mostra un messaggio di errore in caso di input non valido
             QMessageBox.critical(self, "Errore", f"Input non valido: {str(e)}")
 
 
@@ -524,7 +509,6 @@ class WienerFilterDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        # Slider per la dimensione del kernel
         self.kernel_size_slider = QSlider(Qt.Horizontal)
         self.kernel_size_slider.setMinimum(1)
         self.kernel_size_slider.setMaximum(15)
@@ -536,7 +520,6 @@ class WienerFilterDialog(QDialog):
         layout.addWidget(self.kernel_size_label)
         layout.addWidget(self.kernel_size_slider)
 
-        # Slider per il rumore
         self.noise_slider = QSlider(Qt.Horizontal)
         self.noise_slider.setMinimum(1)
         self.noise_slider.setMaximum(100)
@@ -548,7 +531,6 @@ class WienerFilterDialog(QDialog):
         layout.addWidget(self.noise_label)
         layout.addWidget(self.noise_slider)
 
-        # Pulsanti Applica e Cancella
         button_layout = QHBoxLayout()
         apply_button = QPushButton('Applica', self)
         apply_button.clicked.connect(self.apply_filter)

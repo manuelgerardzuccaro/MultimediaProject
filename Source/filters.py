@@ -62,9 +62,9 @@ def mean_filter(image, kernel_size=3):
     # Creato un kernel di dimensione kernel_size X kernel_size
     kernel = np.ones((kernel_size, kernel_size), np.float32) / (kernel_size * kernel_size)
 
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         return cv2.filter2D(image, -1, kernel)
-    else:  # Immagine a colori
+    else:  # immagine a colori
         channels = cv2.split(image)
         filtered_channels = [cv2.filter2D(channel, -1, kernel) for channel in channels]
         return cv2.merge(filtered_channels)
@@ -79,9 +79,9 @@ def geometric_mean_filter(image, kernel_size=3):
     pad_size = kernel_size // 2
     epsilon = 1e-5  # piccolo valore per evitare log(0)
 
-    if is_grayscale(image): # Immagine in scala di grigi
+    if is_grayscale(image): # immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     filtered_channels = []
@@ -113,9 +113,9 @@ def log_geometric_mean_filter(image, kernel_size=3):
     pad_size = kernel_size // 2  # divisione intera
     epsilon = 1e-5  # piccolo valore per evitare log(0)
 
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     filtered_channels = []
@@ -137,10 +137,8 @@ def log_geometric_mean_filter(image, kernel_size=3):
 
 
 def gaussian_filter(image, kernel_size=5, sigma=1.0):
-    # Assicura che il kernel sia un numero dispari
     if kernel_size % 2 == 0:
         kernel_size += 1
-    # Applica il filtro gaussiano
     return cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
 
 
@@ -152,9 +150,9 @@ def contra_harmonic_mean_filter(image, kernel_size=3, Q=1.0):
 
     pad_size = kernel_size // 2
 
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     filtered_channels = []
@@ -181,14 +179,11 @@ def contra_harmonic_mean_filter(image, kernel_size=3, Q=1.0):
 
 
 def notch_filter(image, d0, u_k, v_k):
-    # Controlla se l'immagine ha 3 canali (colori)
     if not is_grayscale(image):
-        # Separa i canali (B, G, R)
         channels = cv2.split(image)
         filtered_channels = []
 
         for ch in channels:
-            # Applica il filtro notch al canale
             dft = np.fft.fft2(ch)
             dft_shift = np.fft.fftshift(dft)
 
@@ -207,29 +202,24 @@ def notch_filter(image, d0, u_k, v_k):
                         if duv < d0 or duv_neg < d0:
                             mask[i, j] = 0
 
-            # Applica la maschera
             dft_shift_filtered = dft_shift * mask
 
-            # Inversa della trasformata di Fourier
+            # inversa della trasformata di Fourier
             f_ishift = np.fft.ifftshift(dft_shift_filtered)
             img_back = np.fft.ifft2(f_ishift)
             img_back = np.abs(img_back)
 
-            # Aggiungi il canale filtrato alla lista
             filtered_channels.append(np.clip(img_back, 0, 255).astype(np.uint8))
 
-        # Combina i canali filtrati in un'unica immagine a colori
         return cv2.merge(filtered_channels)
 
-    else:  # Immagine in scala di grigi
-        # Applica il filtro direttamente
+    else:  # immagine in scala di grigi
         dft = np.fft.fft2(image)
         dft_shift = np.fft.fftshift(dft)
 
         rows, cols = image.shape
         crow, ccol = rows // 2, cols // 2
 
-        # Crea la maschera
         mask = np.ones((rows, cols), np.float32)
 
         for u, v in zip(u_k, v_k):
@@ -241,10 +231,9 @@ def notch_filter(image, d0, u_k, v_k):
                     if duv < d0 or duv_neg < d0:
                         mask[i, j] = 0
 
-        # Applica la maschera
         dft_shift_filtered = dft_shift * mask
 
-        # Inversa della trasformata di Fourier
+        # inversa della trasformata di Fourier
         f_ishift = np.fft.ifftshift(dft_shift_filtered)
         img_back = np.fft.ifft2(f_ishift)
         img_back = np.abs(img_back)
@@ -253,15 +242,13 @@ def notch_filter(image, d0, u_k, v_k):
 
 
 def shock_filter(image, iterations=10, dt=0.1):
-    # Verifica se l'immagine è in scala di grigi o a colori
-    if is_grayscale(image): # Immagine in scala di grigi
+    if is_grayscale(image): # immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     filtered_channels = []
     for img in images:
-        # Normalizzazione dell'immagine
         img_float = img.astype(np.float32) / 255.0
 
         for _ in range(iterations):
@@ -270,22 +257,20 @@ def shock_filter(image, iterations=10, dt=0.1):
             gradient_y = cv2.Sobel(img_float, cv2.CV_32F, 0, 1, ksize=3)
             grad_mag = np.sqrt(gradient_x ** 2 + gradient_y ** 2)
 
-            # Direzione della propagazione dello shock
+            # direzione della propagazione dello shock
             sign_lap = np.sign(laplacian)
             img_float += dt * sign_lap * grad_mag
 
-        # Clip dei valori e conversione in uint8
         img_filtered = np.clip(img_float * 255, 0, 255).astype(np.uint8)
         filtered_channels.append(img_filtered)
 
-    # Combina i canali nel caso di un'immagine a colori, altrimenti restituisce l'immagine in scala di grigi
     return cv2.merge(filtered_channels) if len(filtered_channels) > 1 else filtered_channels[0]
 
 
 def homomorphic_filter(image, low=0.5, high=1.5, cutoff=30):
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     filtered_channels = []
@@ -395,14 +380,14 @@ def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
 
 
 def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     restored_channels = []
     for img in images:
-        # Filtro mediano preliminare per ridurre il rumore "sale e pepe"
+        # filtro mediano preliminare per ridurre il rumore "sale e pepe"
         img = cv2.medianBlur(img, 3)
 
         # Normalizzazione dell'immagine
@@ -441,9 +426,9 @@ def wiener_deconvolution(image, kernel_size=5, noise=0.01):
     epsilon = 1e-5  # Piccolo valore per prevenire divisioni per zero
     pad_size = kernel_size // 2  # Determina la dimensione del padding
 
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     deconvolved_channels = []
@@ -477,10 +462,9 @@ def wiener_deconvolution(image, kernel_size=5, noise=0.01):
 # rumori
 
 def add_gaussian_noise(image, mean=0, std_dev=25):
-    # Converti l'immagine in formato float32 per evitare overflow durante l'aggiunta del rumore
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     noisy_channels = []
@@ -504,25 +488,25 @@ def add_salt_pepper_noise(image, prob=0.05):
 
     # Aggiungi "sale" (bianco)
     coords = [np.random.randint(0, i - 1, num_salt) for i in image.shape[:2]]
-    if is_grayscale(image): # Immagine in scala di grigi
+    if is_grayscale(image): # immagine in scala di grigi
         noisy_image[coords[0], coords[1]] = 255
-    else:  # Immagine a colori
+    else:  # immagine a colori
         noisy_image[coords[0], coords[1], :] = 255
 
     # Aggiungi "pepe" (nero)
     coords = [np.random.randint(0, i - 1, num_pepper) for i in image.shape[:2]]
-    if is_grayscale(image): # Immagine in scala di grigi
+    if is_grayscale(image): # immagine in scala di grigi
         noisy_image[coords[0], coords[1]] = 0
-    else:  # Immagine a colori
+    else:  # immagine a colori
         noisy_image[coords[0], coords[1], :] = 0
 
     return noisy_image
 
 
 def add_uniform_noise(image, low=0, high=50):
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     noisy_channels = []
@@ -535,7 +519,7 @@ def add_uniform_noise(image, low=0, high=50):
 
 
 def add_film_grain_noise(image, std_dev=20):
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         row, col = image.shape
         noise = np.random.normal(0, std_dev, (row, col)).astype(np.int16)
         img_int16 = image.astype(np.int16)
@@ -543,7 +527,7 @@ def add_film_grain_noise(image, std_dev=20):
         noisy_img = np.clip(noisy_img, 0, 255).astype(np.uint8)
         return noisy_img
 
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
         noisy_channels = []
         for img in images:
@@ -560,7 +544,7 @@ def add_film_grain_noise(image, std_dev=20):
 def add_periodic_noise(image, amplitude=50, frequency=40):
     if is_grayscale(image):  # Immagine in scala di grigi
         images = [image]
-    else:  # Immagine a colori
+    else:  # immagine a colori
         images = cv2.split(image)
 
     noisy_channels = []
