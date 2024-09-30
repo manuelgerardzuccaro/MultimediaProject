@@ -158,7 +158,7 @@ class ImageRestorationApp(QMainWindow):
                 self.reset_filters()
                 display_image(image_rgb, self.restored_label)
 
-    def log_filter_results(self, image_name, filters, restored_image, image_id, csv_filename='risultati_restauro.csv'):
+    def log_filter_results(self, image_name, filters, restored_image, image_id, csv_filename='risultati.csv'):
         # Converti entrambe le immagini in RGB per garantire che abbiano lo stesso formato
         if len(self.image.shape) == 2:  # Se l'immagine originale è in scala di grigi
             original_image = cv2.cvtColor(self.image, cv2.COLOR_GRAY2RGB)
@@ -211,7 +211,7 @@ class ImageRestorationApp(QMainWindow):
                 save_image(self.restored_image, fileName)
 
                 # Genera un nuovo ID solo una volta per questa immagine
-                csv_filename = 'risultati_restauro.csv'
+                csv_filename = 'risultati.csv'
                 file_exists = os.path.isfile(csv_filename)
                 image_id = 1  # ID iniziale
                 if file_exists:
