@@ -421,6 +421,9 @@ def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
 
 
 def wiener_deconvolution(image, kernel_size=5, noise=0.01):
+    if kernel_size <= 1:
+        kernel_size = 2
+
     epsilon = 1e-5  # Piccolo valore per prevenire divisioni per zero
     pad_size = kernel_size // 2  # Determina la dimensione del padding
 

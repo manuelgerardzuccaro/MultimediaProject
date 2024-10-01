@@ -1,0 +1,13 @@
+ID,NomeFile,NomeFiltro,Parametri,PSNR,MSE,SSIM
+1,ali_gaussiano_rumorosa.jpg,Rumore Gaussiano,None,20.573028615123054,92.11354285714286,0.34791743416005755
+2,ali_saleepepe_rumorosa.jpg,Rumore Sale e Pepe,None,17.879263931211728,5.421322448979592,0.39456500080006124
+3,ali_periodico_rumorosa.jpg,Rumore Periodico,None,17.62822221246852,109.70924081632653,0.23033192472688038
+4,gatto_gaussiano_rumorosa.jpg,Rumore Gaussiano,None,20.72391187125315,91.161,0.2732131151849893
+5,gatto_saleepepe_rumorosa.jpg,Rumore Sale e Pepe,None,17.96199111584343,4.320655555555556,0.3192143381712171
+6,gatto_periodico_rumorosa.jpg,Rumore Periodico,None,17.78767913058436,105.81403333333333,0.17288859378667168
+7,giraffa_gaussiano_rumorosa.jpg,Rumore Gaussiano,None,20.608458624445337,93.77376302083333,0.363472021392895
+8,giraffa_saleepepe_rumorosa.jpg,Rumore Sale e Pepe,None,13.346745221163856,15.940895182291667,0.18617996110959076
+9,giraffa_periodico_rumorosa.jpg,Rumore Periodico,None,17.652820470850596,107.27303059895833,0.25814674940720556
+10,fiore_gaussiano_rumorosa.jpg,Rumore Gaussiano,None,20.66397043573026,89.06800613754956,0.34369558741747924
+11,fiore_saleepepe_rumorosa.jpg,Rumore Sale e Pepe,None,13.362865049480456,14.295956932733501,0.14759401476534936
+12,fiore_periodico_rumorosa.jpg,Rumore Periodico,None,17.667096735469258,104.27584456568715,0.21566610128282684
