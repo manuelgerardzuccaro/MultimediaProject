@@ -458,16 +458,6 @@ def wiener_deconvolution(image, kernel_size=5, noise=0.01):
 
 
 def crimmins_speckle_removal(image, iterations=1):
-    """
-    Implementa il Crimmins Speckle Removal.
-
-    Args:
-        image: L'immagine da processare (in scala di grigi o a colori).
-        iterations: Numero di iterazioni da eseguire.
-
-    Returns:
-        L'immagine con riduzione del rumore.
-    """
     # Se l'immagine è a colori, separa i canali
     if len(image.shape) == 3:
         channels = cv2.split(image)
@@ -478,58 +468,36 @@ def crimmins_speckle_removal(image, iterations=1):
 
 
 def crimmins_speckle_removal_single_channel(image, iterations):
-    # Conversione in float per evitare problemi di overflow/underflow
+    # Conversione dell'immagine in float32
     image = image.astype(np.float32)
 
     for _ in range(iterations):
-        # Passata 1 (attenuazione)
-        for i in range(1, image.shape[0] - 1):
-            for j in range(1, image.shape[1] - 1):
-                # Vicini 8-connessi
-                north = image[i - 1, j]
-                south = image[i + 1, j]
-                east = image[i, j + 1]
-                west = image[i, j - 1]
-                northeast = image[i - 1, j + 1]
-                northwest = image[i - 1, j - 1]
-                southeast = image[i + 1, j + 1]
-                southwest = image[i + 1, j - 1]
+        # Passata di attenuazione
+        neighbors = [
+            np.roll(image, 1, axis=0),  # north
+            np.roll(image, -1, axis=0),  # south
+            np.roll(image, 1, axis=1),  # west
+            np.roll(image, -1, axis=1),  # east
+            np.roll(np.roll(image, 1, axis=0), 1, axis=1),  # northwest
+            np.roll(np.roll(image, 1, axis=0), -1, axis=1),  # northeast
+            np.roll(np.roll(image, -1, axis=0), 1, axis=1),  # southwest
+            np.roll(np.roll(image, -1, axis=0), -1, axis=1)  # southeast
+        ]
 
-                # Calcolo del valore medio
-                neighborhood = np.array([north, south, east, west, northeast, northwest, southeast, southwest])
-                min_neighbor = np.min(neighborhood)
-                max_neighbor = np.max(neighborhood)
+        # Calcola il minimo e il massimo tra i pixel vicini
+        min_neighbor = np.min(neighbors, axis=0)
+        max_neighbor = np.max(neighbors, axis=0)
 
-                # Aggiornamento del pixel
-                if image[i, j] < min_neighbor:
-                    image[i, j] = min_neighbor
-                elif image[i, j] > max_neighbor:
-                    image[i, j] = max_neighbor
+        # Attenua i valori
+        image = np.where(image < min_neighbor, min_neighbor, image)
+        image = np.where(image > max_neighbor, max_neighbor, image)
 
-        # Passata 2 (rinforzo)
-        for i in range(1, image.shape[0] - 1):
-            for j in range(1, image.shape[1] - 1):
-                # Vicini 8-connessi
-                north = image[i - 1, j]
-                south = image[i + 1, j]
-                east = image[i, j + 1]
-                west = image[i, j - 1]
-                northeast = image[i - 1, j + 1]
-                northwest = image[i - 1, j - 1]
-                southeast = image[i + 1, j + 1]
-                southwest = image[i + 1, j - 1]
+        # Passata di rinforzo
+        mean_neighbor = np.mean(neighbors, axis=0)
+        image = np.where(image > mean_neighbor, image - 1, image)
+        image = np.where(image < mean_neighbor, image + 1, image)
 
-                # Calcolo del valore medio
-                neighborhood = np.array([north, south, east, west, northeast, northwest, southeast, southwest])
-                mean_neighbor = np.mean(neighborhood)
-
-                # Aggiornamento del pixel
-                if image[i, j] > mean_neighbor:
-                    image[i, j] -= 1
-                elif image[i, j] < mean_neighbor:
-                    image[i, j] += 1
-
-    # Conversione dell'immagine al formato uint8
+    # Conversione in uint8
     return np.clip(image, 0, 255).astype(np.uint8)
 
 
