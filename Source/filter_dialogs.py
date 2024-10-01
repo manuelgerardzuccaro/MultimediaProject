@@ -475,10 +475,10 @@ class L1TVDeconvolutionDialog(QDialog):
         self.reg_weight_slider = QSlider(Qt.Horizontal)
         self.reg_weight_slider.setMinimum(1)
         self.reg_weight_slider.setMaximum(100)
-        self.reg_weight_slider.setValue(10)
-        self.reg_weight_label = QLabel(f"Peso regolarizzazione: {self.reg_weight_slider.value() / 100.0}", self)
+        self.reg_weight_slider.setValue(1)
+        self.reg_weight_label = QLabel(f"Peso regolarizzazione: {self.reg_weight_slider.value() / 1000.0}", self)
         self.reg_weight_slider.valueChanged.connect(
-            lambda: self.reg_weight_label.setText(f"Peso regolarizzazione: {self.reg_weight_slider.value() / 100.0}"))
+            lambda: self.reg_weight_label.setText(f"Peso regolarizzazione: {self.reg_weight_slider.value() / 1000.0}"))
 
         layout.addWidget(self.iterations_label)
         layout.addWidget(self.iterations_slider)
@@ -497,7 +497,7 @@ class L1TVDeconvolutionDialog(QDialog):
 
     def apply_filter(self):
         iterations = self.iterations_slider.value()
-        regularization_weight = self.reg_weight_slider.value() / 100.0
+        regularization_weight = self.reg_weight_slider.value() / 1000.0
         self.apply_callback(iterations, regularization_weight)
         self.close()
 

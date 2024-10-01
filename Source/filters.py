@@ -390,12 +390,12 @@ def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
         # filtro mediano preliminare per ridurre il rumore "sale e pepe"
         img = cv2.medianBlur(img, 3)
 
-        # Normalizzazione dell'immagine
+        # normalizzazione dell'immagine
         img = img.astype(np.float32) / 255.0
 
         restored_image = img.copy()
 
-        # Kernel per la convoluzione (gaussiano)
+        # kernel per la convoluzione (gaussiano)
         kernel = np.array([[1, 2, 1],
                            [2, 4, 2],
                            [1, 2, 1]]) / 16
@@ -403,7 +403,7 @@ def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
         for _ in range(iterations):
             blurred_image = convolve(restored_image, kernel)
 
-            # Gradiente per la regolarizzazione TV
+            # gradiente per la regolarizzazione TV
             gradient_x = np.roll(restored_image, -1, axis=1) - restored_image
             gradient_y = np.roll(restored_image, -1, axis=0) - restored_image
             tv_term = np.sqrt(gradient_x ** 2 + gradient_y ** 2 + 1e-5)
@@ -414,11 +414,9 @@ def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
             update_term = regularization_weight * (fidelity_term / (tv_term + 1e-8))
             restored_image -= update_term
 
-        # Ri-scalatura dei valori dell'immagine e ritorno al formato uint8
         restored_image = np.clip(restored_image * 255, 0, 255).astype(np.uint8)
         restored_channels.append(restored_image)
 
-    # Combina i canali nel caso di un'immagine a colori, altrimenti restituisce il canale singolo
     return cv2.merge(restored_channels) if len(restored_channels) > 1 else restored_channels[0]
 
 
