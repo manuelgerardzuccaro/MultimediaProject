@@ -79,7 +79,7 @@ def geometric_mean_filter(image, kernel_size=3):
     pad_size = kernel_size // 2
     epsilon = 1e-5  # piccolo valore per evitare log(0)
 
-    if is_grayscale(image): # immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
     else:  # immagine a colori
         images = cv2.split(image)
@@ -242,7 +242,7 @@ def notch_filter(image, d0, u_k, v_k):
 
 
 def shock_filter(image, iterations=10, dt=0.1):
-    if is_grayscale(image): # immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
     else:  # immagine a colori
         images = cv2.split(image)
@@ -457,6 +457,82 @@ def wiener_deconvolution(image, kernel_size=5, noise=0.01):
     return cv2.merge(deconvolved_channels) if len(deconvolved_channels) > 1 else deconvolved_channels[0]
 
 
+def crimmins_speckle_removal(image, iterations=1):
+    """
+    Implementa il Crimmins Speckle Removal.
+
+    Args:
+        image: L'immagine da processare (in scala di grigi o a colori).
+        iterations: Numero di iterazioni da eseguire.
+
+    Returns:
+        L'immagine con riduzione del rumore.
+    """
+    # Se l'immagine è a colori, separa i canali
+    if len(image.shape) == 3:
+        channels = cv2.split(image)
+        processed_channels = [crimmins_speckle_removal_single_channel(ch, iterations) for ch in channels]
+        return cv2.merge(processed_channels)
+    else:
+        return crimmins_speckle_removal_single_channel(image, iterations)
+
+
+def crimmins_speckle_removal_single_channel(image, iterations):
+    # Conversione in float per evitare problemi di overflow/underflow
+    image = image.astype(np.float32)
+
+    for _ in range(iterations):
+        # Passata 1 (attenuazione)
+        for i in range(1, image.shape[0] - 1):
+            for j in range(1, image.shape[1] - 1):
+                # Vicini 8-connessi
+                north = image[i - 1, j]
+                south = image[i + 1, j]
+                east = image[i, j + 1]
+                west = image[i, j - 1]
+                northeast = image[i - 1, j + 1]
+                northwest = image[i - 1, j - 1]
+                southeast = image[i + 1, j + 1]
+                southwest = image[i + 1, j - 1]
+
+                # Calcolo del valore medio
+                neighborhood = np.array([north, south, east, west, northeast, northwest, southeast, southwest])
+                min_neighbor = np.min(neighborhood)
+                max_neighbor = np.max(neighborhood)
+
+                # Aggiornamento del pixel
+                if image[i, j] < min_neighbor:
+                    image[i, j] = min_neighbor
+                elif image[i, j] > max_neighbor:
+                    image[i, j] = max_neighbor
+
+        # Passata 2 (rinforzo)
+        for i in range(1, image.shape[0] - 1):
+            for j in range(1, image.shape[1] - 1):
+                # Vicini 8-connessi
+                north = image[i - 1, j]
+                south = image[i + 1, j]
+                east = image[i, j + 1]
+                west = image[i, j - 1]
+                northeast = image[i - 1, j + 1]
+                northwest = image[i - 1, j - 1]
+                southeast = image[i + 1, j + 1]
+                southwest = image[i + 1, j - 1]
+
+                # Calcolo del valore medio
+                neighborhood = np.array([north, south, east, west, northeast, northwest, southeast, southwest])
+                mean_neighbor = np.mean(neighborhood)
+
+                # Aggiornamento del pixel
+                if image[i, j] > mean_neighbor:
+                    image[i, j] -= 1
+                elif image[i, j] < mean_neighbor:
+                    image[i, j] += 1
+
+    # Conversione dell'immagine al formato uint8
+    return np.clip(image, 0, 255).astype(np.uint8)
+
+
 # altri filtri...
 
 
@@ -489,14 +565,14 @@ def add_salt_pepper_noise(image, prob=0.05):
 
     # Aggiungi "sale" (bianco)
     coords = [np.random.randint(0, i - 1, num_salt) for i in image.shape[:2]]
-    if is_grayscale(image): # immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         noisy_image[coords[0], coords[1]] = 255
     else:  # immagine a colori
         noisy_image[coords[0], coords[1], :] = 255
 
     # Aggiungi "pepe" (nero)
     coords = [np.random.randint(0, i - 1, num_pepper) for i in image.shape[:2]]
-    if is_grayscale(image): # immagine in scala di grigi
+    if is_grayscale(image):  # immagine in scala di grigi
         noisy_image[coords[0], coords[1]] = 0
     else:  # immagine a colori
         noisy_image[coords[0], coords[1], :] = 0

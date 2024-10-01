@@ -549,3 +549,38 @@ class WienerFilterDialog(QDialog):
         noise = self.noise_slider.value() / 100.0
         self.apply_callback(kernel_size, noise)
         self.close()
+
+
+class CrimminsFilterDialog(QDialog):
+    def __init__(self, parent, apply_callback):
+        super().__init__(parent)
+        self.setWindowTitle("Filtro Crimmins Speckle Removal")
+
+        layout = QVBoxLayout(self)
+
+        self.iterations_slider = QSlider(Qt.Horizontal)
+        self.iterations_slider.setMinimum(1)
+        self.iterations_slider.setMaximum(10)
+        self.iterations_slider.setValue(1)
+        self.iterations_label = QLabel(f"Iterazioni: {self.iterations_slider.value()}", self)
+        self.iterations_slider.valueChanged.connect(
+            lambda: self.iterations_label.setText(f"Iterazioni: {self.iterations_slider.value()}")
+        )
+
+        layout.addWidget(self.iterations_label)
+        layout.addWidget(self.iterations_slider)
+
+        apply_button = QPushButton('Applica', self)
+        apply_button.clicked.connect(self.apply_filter)
+        layout.addWidget(apply_button)
+
+        cancel_button = QPushButton('Cancella', self)
+        cancel_button.clicked.connect(self.close)
+        layout.addWidget(cancel_button)
+
+        self.apply_callback = apply_callback
+
+    def apply_filter(self):
+        iterations = self.iterations_slider.value()
+        self.apply_callback(iterations)
+        self.close()
