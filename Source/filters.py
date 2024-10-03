@@ -344,17 +344,21 @@ def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
     """
     Applica la diffusione anisotropica su un singolo canale di immagine in scala di grigi.
     """
-    # normalizzazione tra 0 e 1
+    # Normalizzazione tra 0 e 1
     channel = channel.astype(np.float32) / 255.0
 
-    for _ in range(iterations):
-        # calcolo dei gradienti
-        nabla_north = np.roll(channel, 1, axis=0) - channel
-        nabla_south = np.roll(channel, -1, axis=0) - channel
-        nabla_east = np.roll(channel, -1, axis=1) - channel
-        nabla_west = np.roll(channel, 1, axis=1) - channel
+    # Aggiungi padding riflessivo attorno all'immagine (aumentato a 2 pixel)
+    padding_size = 2
+    channel_padded = np.pad(channel, pad_width=padding_size, mode='reflect')
 
-        # calcolo dei coefficienti di diffusione
+    for _ in range(iterations):
+        # Calcolo dei gradienti
+        nabla_north = np.roll(channel_padded, 1, axis=0) - channel_padded
+        nabla_south = np.roll(channel_padded, -1, axis=0) - channel_padded
+        nabla_east = np.roll(channel_padded, -1, axis=1) - channel_padded
+        nabla_west = np.roll(channel_padded, 1, axis=1) - channel_padded
+
+        # Calcolo dei coefficienti di diffusione
         if option == 1:
             c_north = np.exp(-(nabla_north / k) ** 2)
             c_south = np.exp(-(nabla_south / k) ** 2)
@@ -366,14 +370,18 @@ def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
             c_east = 1.0 / (1.0 + (nabla_east / k) ** 2)
             c_west = 1.0 / (1.0 + (nabla_west / k) ** 2)
 
-        channel += gamma * (
+        # Aggiornamento del canale con il termine di diffusione
+        channel_padded += gamma * (
                 c_north * nabla_north +
                 c_south * nabla_south +
                 c_east * nabla_east +
                 c_west * nabla_west
         )
 
-    # ri-scalatura dei valori da 0 a 255
+    # Rimuovi il padding per riportare l'immagine alle dimensioni originali
+    channel = channel_padded[padding_size:-padding_size, padding_size:-padding_size]
+
+    # Ri-scalatura dei valori da 0 a 255
     channel = np.clip(channel * 255, 0, 255).astype(np.uint8)
 
     return channel
@@ -471,17 +479,20 @@ def crimmins_speckle_removal_single_channel(image, iterations):
     # Conversione dell'immagine in float32
     image = image.astype(np.float32)
 
+    # Aggiungi padding riflessivo attorno all'immagine
+    image_padded = np.pad(image, pad_width=1, mode='reflect')
+
     for _ in range(iterations):
         # Passata di attenuazione
         neighbors = [
-            np.roll(image, 1, axis=0),  # north
-            np.roll(image, -1, axis=0),  # south
-            np.roll(image, 1, axis=1),  # west
-            np.roll(image, -1, axis=1),  # east
-            np.roll(np.roll(image, 1, axis=0), 1, axis=1),  # northwest
-            np.roll(np.roll(image, 1, axis=0), -1, axis=1),  # northeast
-            np.roll(np.roll(image, -1, axis=0), 1, axis=1),  # southwest
-            np.roll(np.roll(image, -1, axis=0), -1, axis=1)  # southeast
+            np.roll(image_padded, 1, axis=0),  # north
+            np.roll(image_padded, -1, axis=0),  # south
+            np.roll(image_padded, 1, axis=1),  # west
+            np.roll(image_padded, -1, axis=1),  # east
+            np.roll(np.roll(image_padded, 1, axis=0), 1, axis=1),  # northwest
+            np.roll(np.roll(image_padded, 1, axis=0), -1, axis=1),  # northeast
+            np.roll(np.roll(image_padded, -1, axis=0), 1, axis=1),  # southwest
+            np.roll(np.roll(image_padded, -1, axis=0), -1, axis=1)  # southeast
         ]
 
         # Calcola il minimo e il massimo tra i pixel vicini
@@ -489,13 +500,16 @@ def crimmins_speckle_removal_single_channel(image, iterations):
         max_neighbor = np.max(neighbors, axis=0)
 
         # Attenua i valori
-        image = np.where(image < min_neighbor, min_neighbor, image)
-        image = np.where(image > max_neighbor, max_neighbor, image)
+        image_padded = np.where(image_padded < min_neighbor, min_neighbor, image_padded)
+        image_padded = np.where(image_padded > max_neighbor, max_neighbor, image_padded)
 
         # Passata di rinforzo
         mean_neighbor = np.mean(neighbors, axis=0)
-        image = np.where(image > mean_neighbor, image - 1, image)
-        image = np.where(image < mean_neighbor, image + 1, image)
+        image_padded = np.where(image_padded > mean_neighbor, image_padded - 1, image_padded)
+        image_padded = np.where(image_padded < mean_neighbor, image_padded + 1, image_padded)
+
+    # Rimuovi il padding
+    image = image_padded[1:-1, 1:-1]
 
     # Conversione in uint8
     return np.clip(image, 0, 255).astype(np.uint8)

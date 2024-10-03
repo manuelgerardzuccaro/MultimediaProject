@@ -560,7 +560,7 @@ class CrimminsFilterDialog(QDialog):
 
         self.iterations_slider = QSlider(Qt.Horizontal)
         self.iterations_slider.setMinimum(1)
-        self.iterations_slider.setMaximum(10)
+        self.iterations_slider.setMaximum(20)
         self.iterations_slider.setValue(1)
         self.iterations_label = QLabel(f"Iterazioni: {self.iterations_slider.value()}", self)
         self.iterations_slider.valueChanged.connect(
