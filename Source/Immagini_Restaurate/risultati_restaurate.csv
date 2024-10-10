@@ -1,0 +1,24 @@
+ID,NomeFile,NomeFiltro,Parametri,PSNR,MSE,SSIM
+1,ali_gaussiano_restaurata.jpg,Filtro Gaussiano,kernel_size=5; sigma=1.0,26.316905000599824,52.791224489795916,0.6371069431689564
+1,ali_gaussiano_restaurata.jpg,Deconvoluzione ℓ1-TV,iterations=19; regularization_weight=0.01,26.316905000599824,52.791224489795916,0.6371069431689564
+1,ali_gaussiano_restaurata.jpg,Filtro Crimmins Speckle Removal,11,26.316905000599824,52.791224489795916,0.6371069431689564
+2,ali_saleepepe_restaurata.jpg,Deconvoluzione ℓ1-TV,iterations=8; regularization_weight=0.004,27.975707105883636,40.42988571428572,0.7026391263989651
+3,ali_periodico_restaurata.jpg,Filtro Notch,"d0=10; u_k=[0, 0]; v_k=[40, -40]",31.61560734909038,26.98225306122449,0.8900840037607717
+4,gatto_gaussiano_restaurata.jpg,Filtro Crimmins Speckle Removal,11,27.772938161454018,48.781888888888886,0.7839820359280406
+4,gatto_gaussiano_restaurata.jpg,Filtro Crimmins Speckle Removal,11,27.772938161454018,48.781888888888886,0.7839820359280406
+4,gatto_gaussiano_restaurata.jpg,Deconvoluzione ℓ1-TV,iterations=20; regularization_weight=0.001,27.772938161454018,48.781888888888886,0.7839820359280406
+4,gatto_gaussiano_restaurata.jpg,Filtro Crimmins Speckle Removal,6,27.772938161454018,48.781888888888886,0.7839820359280406
+5,gatto_saleepepe_restaurata.jpg,Deconvoluzione ℓ1-TV,iterations=20; regularization_weight=0.006,32.25898152862428,17.663755555555557,0.9032856845589072
+6,gatto_periodico_restaurata.jpg,Filtro Notch,"d0=10; u_k=[0, 0]; v_k=[40, -40]",28.880485479294464,37.31474444444444,0.8118701525231775
+7,giraffa_gaussiano_restaurata.jpg,Filtro Crimmins Speckle Removal,20,26.10415657431867,57.2630859375,0.688890915623368
+7,giraffa_gaussiano_restaurata.jpg,Deconvoluzione ℓ1-TV,iterations=20; regularization_weight=0.007,26.10415657431867,57.2630859375,0.688890915623368
+8,giraffa_saleepepe_restaurata.jpg,Deconvoluzione ℓ1-TV,iterations=30; regularization_weight=0.007,27.961610176246978,22.140205078125,0.907680085491665
+8,giraffa_saleepepe_restaurata.jpg,Filtro Crimmins Speckle Removal,2,27.961610176246978,22.140205078125,0.907680085491665
+8,giraffa_saleepepe_restaurata.jpg,Filtro MedianBlur,3,27.961610176246978,22.140205078125,0.907680085491665
+9,giraffa_periodico_restaurata.jpg,Filtro Notch,"d0=10; u_k=[0, 0]; v_k=[40, -40]",30.7675631449218,32.828408203125,0.8629663346354196
+10,fiore_gaussiano_restaurata.jpg,Deconvoluzione ℓ1-TV,iterations=20; regularization_weight=0.001,28.325016658445886,48.450117907084,0.7640421570662973
+10,fiore_gaussiano_restaurata.jpg,Filtro Crimmins Speckle Removal,11,28.325016658445886,48.450117907084,0.7640421570662973
+11,fiore_saleepepe_restaurata.jpg,Deconvoluzione ℓ1-TV,iterations=20; regularization_weight=0.009,31.34444772537451,14.815423928901883,0.941148511236746
+11,fiore_saleepepe_restaurata.jpg,Filtro MedianBlur,3,31.34444772537451,14.815423928901883,0.941148511236746
+11,fiore_saleepepe_restaurata.jpg,Filtro Crimmins Speckle Removal,1,31.34444772537451,14.815423928901883,0.941148511236746
+12,fiore_periodico_restaurata.jpg,Filtro Notch,"d0=11; u_k=[0, 0]; v_k=[40, -40]",30.067219215569008,30.362553406252992,0.8489267365006917
