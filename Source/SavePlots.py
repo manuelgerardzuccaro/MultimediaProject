@@ -3,24 +3,20 @@ import re
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Caricamento dei dati
 rumorose_df = pd.read_csv('Immagini_Rumorose/risultati_rumorose.csv')
 restaurate_df = pd.read_csv('Immagini_Restaurate/risultati_restaurate.csv')
 
-# Unione dei dataframe
 merged_df = pd.merge(rumorose_df, restaurate_df, on='ID', suffixes=('_rumorosa', '_restaurata'))
 
-# Funzione per determinare il nome comune in base all'ID
-# Il nome viene estratto dalla colonna "Nome" del dataframe
-# Rimuove la parte dopo il secondo "_" compreso il "_"
 def get_common_name_by_id(id_val):
     id_data = merged_df[merged_df['ID'] == id_val]
     if id_data.empty:
         return "Nome Sconosciuto"
     nome_completo = id_data['NomeFile_rumorosa'].values[0]
-    return re.sub(r'(_[^_]+){1}$', '', nome_completo)
+    nome_modificato = re.sub(r'(_[^_]+){1}$', '', nome_completo)
+    nome_modificato = re.sub(r'(_)', r'\1rumore_', nome_modificato, count=1)
+    return nome_modificato
 
-# Funzione per salvare i grafici a barre per un singolo ID
 def barplot_metrics_for_id(id_val, output_folder):
     id_data = merged_df[merged_df['ID'] == id_val]
     if id_data.empty:
@@ -34,7 +30,6 @@ def barplot_metrics_for_id(id_val, output_folder):
         'SSIM': (0, 1 * 1.2)
     }
 
-    # Determina il nome comune in base all'ID
     nome_comune = get_common_name_by_id(id_val)
 
     for metric in metrics:
@@ -53,7 +48,6 @@ def barplot_metrics_for_id(id_val, output_folder):
         plt.savefig(os.path.join(output_folder, f'barplot_{metric}_ID_{id_val}.png'))
         plt.close()
 
-# Funzione per salvare i grafici a linee per un singolo ID
 def lineplot_metrics_for_id(id_val, output_folder):
     id_data = merged_df[merged_df['ID'] == id_val]
     if id_data.empty:
@@ -63,7 +57,6 @@ def lineplot_metrics_for_id(id_val, output_folder):
     metrics = ['PSNR', 'MSE', 'SSIM']
     metrics_colors = {'PSNR': 'blue', 'MSE': 'red', 'SSIM': 'orange'}
 
-    # Determina il nome comune in base all'ID
     nome_comune = get_common_name_by_id(id_val)
 
     for metric in metrics:
@@ -81,12 +74,10 @@ def lineplot_metrics_for_id(id_val, output_folder):
         plt.savefig(os.path.join(output_folder, f'lineplot_{metric}_ID_{id_val}.png'))
         plt.close()
 
-# Iterazione tra gli ID da 1 a 12 e salvataggio dei grafici
 for id_val in range(1, 13):
     output_folder = f'plot_{id_val}'
     os.makedirs(output_folder, exist_ok=True)
 
-    # Generazione e salvataggio dei grafici a barre e a linee per ogni ID
     lineplot_metrics_for_id(id_val, output_folder)
     barplot_metrics_for_id(id_val, output_folder)
 
