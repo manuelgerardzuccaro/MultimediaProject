@@ -75,7 +75,7 @@ def lineplot_metrics_for_id(id_val, output_folder):
         plt.close()
 
 for id_val in range(1, 13):
-    output_folder = f'plot_{id_val}'
+    output_folder = os.path.join('Grafici', f'plot_{id_val}')
     os.makedirs(output_folder, exist_ok=True)
 
     lineplot_metrics_for_id(id_val, output_folder)
