@@ -1,4 +1,5 @@
 ﻿import os
+import re
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -8,6 +9,16 @@ restaurate_df = pd.read_csv('Immagini_Restaurate/risultati_restaurate.csv')
 
 # Unione dei dataframe
 merged_df = pd.merge(rumorose_df, restaurate_df, on='ID', suffixes=('_rumorosa', '_restaurata'))
+
+# Funzione per determinare il nome comune in base all'ID
+# Il nome viene estratto dalla colonna "Nome" del dataframe
+# Rimuove la parte dopo il secondo "_" compreso il "_"
+def get_common_name_by_id(id_val):
+    id_data = merged_df[merged_df['ID'] == id_val]
+    if id_data.empty:
+        return "Nome Sconosciuto"
+    nome_completo = id_data['NomeFile_rumorosa'].values[0]
+    return re.sub(r'(_[^_]+){1}$', '', nome_completo)
 
 # Funzione per salvare i grafici a barre per un singolo ID
 def barplot_metrics_for_id(id_val, output_folder):
@@ -23,6 +34,9 @@ def barplot_metrics_for_id(id_val, output_folder):
         'SSIM': (0, 1 * 1.2)
     }
 
+    # Determina il nome comune in base all'ID
+    nome_comune = get_common_name_by_id(id_val)
+
     for metric in metrics:
         plt.figure(figsize=(10, 5))
         values = [id_data[f'{metric}_rumorosa'].values[0], id_data[f'{metric}_restaurata'].values[0]]
@@ -34,7 +48,7 @@ def barplot_metrics_for_id(id_val, output_folder):
         plt.xlabel('Tipo Immagine')
         plt.ylabel(f'Valore della Metrica {metric}')
         plt.ylim(ranges[metric])
-        plt.title(f'{metric} - Immagine ID: {id_val}')
+        plt.title(f'{metric} - {nome_comune}')
         plt.grid(axis='y')
         plt.savefig(os.path.join(output_folder, f'barplot_{metric}_ID_{id_val}.png'))
         plt.close()
@@ -49,6 +63,9 @@ def lineplot_metrics_for_id(id_val, output_folder):
     metrics = ['PSNR', 'MSE', 'SSIM']
     metrics_colors = {'PSNR': 'blue', 'MSE': 'red', 'SSIM': 'orange'}
 
+    # Determina il nome comune in base all'ID
+    nome_comune = get_common_name_by_id(id_val)
+
     for metric in metrics:
         plt.figure(figsize=(10, 5))
         values = [id_data[f'{metric}_rumorosa'].values[0], id_data[f'{metric}_restaurata'].values[0]]
@@ -59,7 +76,7 @@ def lineplot_metrics_for_id(id_val, output_folder):
 
         plt.xlabel('Tipo Immagine')
         plt.ylabel(f'Valore della Metrica {metric}')
-        plt.title(f'{metric} - Immagine ID: {id_val}')
+        plt.title(f'{metric} - {nome_comune}')
         plt.grid(True)
         plt.savefig(os.path.join(output_folder, f'lineplot_{metric}_ID_{id_val}.png'))
         plt.close()
