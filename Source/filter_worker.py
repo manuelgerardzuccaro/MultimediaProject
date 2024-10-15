@@ -14,7 +14,7 @@ class FilterWorker(QThread):
         super().__init__()
         self.image = image
         self.filters = filters
-        self._is_running = True  # flag per controllare lo stato del thread
+        self._is_running = True
 
     def run(self):
         temp_image = self.image.copy()
@@ -50,7 +50,7 @@ class FilterWorker(QThread):
 
         for filter_name, param in self.filters:
             if not self._is_running:
-                break  # Esce dal loop se l'operazione non è più valida
+                break
 
             filter_func = filter_functions.get(filter_name)
             if filter_func:
@@ -58,7 +58,7 @@ class FilterWorker(QThread):
                     temp_image = filter_func(temp_image, param)
                 except Exception as e:
                     print(f"Errore durante l'applicazione del filtro '{filter_name}': {e}")
-                    continue  # Continua con il filtro successivo
+                    continue
             else:
                 print(f"Filtro non riconosciuto: '{filter_name}'")
                 continue
@@ -67,5 +67,4 @@ class FilterWorker(QThread):
             self.filter_applied.emit(temp_image)
 
     def stop(self):
-        """Serve per fermare il thread in modo sicuro"""
         self._is_running = False

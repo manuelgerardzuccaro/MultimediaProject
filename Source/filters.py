@@ -59,7 +59,6 @@ def mean_filter(image, kernel_size=3):
     if kernel_size % 2 == 0:
         kernel_size += 1  # kernel_size dispari
 
-    # Creato un kernel di dimensione kernel_size X kernel_size
     kernel = np.ones((kernel_size, kernel_size), np.float32) / (kernel_size * kernel_size)
 
     if is_grayscale(image):  # immagine in scala di grigi
@@ -190,7 +189,6 @@ def notch_filter(image, d0, u_k, v_k):
             rows, cols = ch.shape
             crow, ccol = rows // 2, cols // 2
 
-            # Crea la maschera
             mask = np.ones((rows, cols), np.float32)
 
             for u, v in zip(u_k, v_k):
@@ -306,7 +304,7 @@ def anisotropic_diffusion(image, iterations=10, k=15, gamma=0.1, option=1):
     Applica il filtro di diffusione anisotropica (Perona-Malik) a un'immagine.
     Efficace nel correggere rumore additivo di tipo gaussiano
 
-    Funziona per immagini a colori separando i canali.
+    Funziona per immagini a colori, separando i canali.
 
     - Iterations: Un numero più basso di iterazioni se si vuole mantenere i dettagli, mentre un numero più alto se il
         rumore è molto forte
@@ -341,24 +339,17 @@ def anisotropic_diffusion(image, iterations=10, k=15, gamma=0.1, option=1):
 
 
 def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
-    """
-    Applica la diffusione anisotropica su un singolo canale di immagine in scala di grigi.
-    """
-    # Normalizzazione tra 0 e 1
     channel = channel.astype(np.float32) / 255.0
 
-    # Aggiungi padding riflessivo attorno all'immagine (aumentato a 2 pixel)
     padding_size = 2
     channel_padded = np.pad(channel, pad_width=padding_size, mode='reflect')
 
     for _ in range(iterations):
-        # Calcolo dei gradienti
         nabla_north = np.roll(channel_padded, 1, axis=0) - channel_padded
         nabla_south = np.roll(channel_padded, -1, axis=0) - channel_padded
         nabla_east = np.roll(channel_padded, -1, axis=1) - channel_padded
         nabla_west = np.roll(channel_padded, 1, axis=1) - channel_padded
 
-        # Calcolo dei coefficienti di diffusione
         if option == 1:
             c_north = np.exp(-(nabla_north / k) ** 2)
             c_south = np.exp(-(nabla_south / k) ** 2)
@@ -370,7 +361,6 @@ def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
             c_east = 1.0 / (1.0 + (nabla_east / k) ** 2)
             c_west = 1.0 / (1.0 + (nabla_west / k) ** 2)
 
-        # Aggiornamento del canale con il termine di diffusione
         channel_padded += gamma * (
                 c_north * nabla_north +
                 c_south * nabla_south +
@@ -378,10 +368,8 @@ def anisotropic_diffusion_single_channel(channel, iterations, k, gamma, option):
                 c_west * nabla_west
         )
 
-    # Rimuovi il padding per riportare l'immagine alle dimensioni originali
     channel = channel_padded[padding_size:-padding_size, padding_size:-padding_size]
 
-    # Ri-scalatura dei valori da 0 a 255
     channel = np.clip(channel * 255, 0, 255).astype(np.uint8)
 
     return channel
@@ -417,7 +405,7 @@ def l1_tv_deconvolution(image, iterations=30, regularization_weight=0.05):
             tv_term = np.sqrt(gradient_x ** 2 + gradient_y ** 2 + 1e-5)
 
             fidelity_term = blurred_image - img
-            fidelity_term = np.clip(fidelity_term, -0.1, 0.1)  # Applicazione di soglia
+            fidelity_term = np.clip(fidelity_term, -0.1, 0.1)
 
             update_term = regularization_weight * (fidelity_term / (tv_term + 1e-8))
             restored_image -= update_term
@@ -432,8 +420,8 @@ def wiener_deconvolution(image, kernel_size=5, noise=0.01):
     if kernel_size <= 1:
         kernel_size = 2
 
-    epsilon = 1e-5  # Piccolo valore per prevenire divisioni per zero
-    pad_size = kernel_size // 2  # Determina la dimensione del padding
+    epsilon = 1e-5
+    pad_size = kernel_size // 2
 
     if is_grayscale(image):  # immagine in scala di grigi
         images = [image]
@@ -444,29 +432,23 @@ def wiener_deconvolution(image, kernel_size=5, noise=0.01):
     for img in images:
         padded_image = cv2.copyMakeBorder(img, pad_size, pad_size, pad_size, pad_size, cv2.BORDER_REFLECT)
 
-        # Normalizza l'immagine nell'intervallo [0, 1]
         padded_image = padded_image.astype(np.float32) / 255.0
 
         deconvolved_img = wiener(padded_image, (kernel_size, kernel_size), noise + epsilon)
 
-        # Gestione di NaN e valori infiniti
         deconvolved_img = np.nan_to_num(deconvolved_img)
 
-        # Rimuovi il padding
         deconvolved_img = deconvolved_img[pad_size:-pad_size, pad_size:-pad_size]
 
-        # Riportare i valori nell'intervallo [0, 1]
         deconvolved_img = np.clip(deconvolved_img, 0, 1)
 
         deconvolved_img = (deconvolved_img * 255).astype(np.uint8)
         deconvolved_channels.append(deconvolved_img)
 
-    # Ricombina i canali nel caso di un'immagine a colori, altrimenti restituisce il canale singolo
     return cv2.merge(deconvolved_channels) if len(deconvolved_channels) > 1 else deconvolved_channels[0]
 
 
 def crimmins_speckle_removal(image, iterations=1):
-    # Se l'immagine è a colori, separa i canali
     if len(image.shape) == 3:
         channels = cv2.split(image)
         processed_channels = [crimmins_speckle_removal_single_channel(ch, iterations) for ch in channels]
@@ -476,14 +458,11 @@ def crimmins_speckle_removal(image, iterations=1):
 
 
 def crimmins_speckle_removal_single_channel(image, iterations):
-    # Conversione dell'immagine in float32
     image = image.astype(np.float32)
 
-    # Aggiungi padding riflessivo attorno all'immagine
     image_padded = np.pad(image, pad_width=1, mode='reflect')
 
     for _ in range(iterations):
-        # Passata di attenuazione
         neighbors = [
             np.roll(image_padded, 1, axis=0),  # north
             np.roll(image_padded, -1, axis=0),  # south
@@ -495,23 +474,18 @@ def crimmins_speckle_removal_single_channel(image, iterations):
             np.roll(np.roll(image_padded, -1, axis=0), -1, axis=1)  # southeast
         ]
 
-        # Calcola il minimo e il massimo tra i pixel vicini
         min_neighbor = np.min(neighbors, axis=0)
         max_neighbor = np.max(neighbors, axis=0)
 
-        # Attenua i valori
         image_padded = np.where(image_padded < min_neighbor, min_neighbor, image_padded)
         image_padded = np.where(image_padded > max_neighbor, max_neighbor, image_padded)
 
-        # Passata di rinforzo
         mean_neighbor = np.mean(neighbors, axis=0)
         image_padded = np.where(image_padded > mean_neighbor, image_padded - 1, image_padded)
         image_padded = np.where(image_padded < mean_neighbor, image_padded + 1, image_padded)
 
-    # Rimuovi il padding
     image = image_padded[1:-1, 1:-1]
 
-    # Conversione in uint8
     return np.clip(image, 0, 255).astype(np.uint8)
 
 
@@ -538,21 +512,19 @@ def add_gaussian_noise(image, mean=0, std_dev=25):
 
 
 def add_salt_pepper_noise(image, prob=0.05):
-    # Crea una copia dell'immagine
     noisy_image = image.copy()
 
-    # Numero di pixel da modificare
     num_salt = int(np.ceil(prob * image.size * 0.5))
     num_pepper = int(np.ceil(prob * image.size * 0.5))
 
-    # Aggiungi "sale" (bianco)
+    # "sale"
     coords = [np.random.randint(0, i - 1, num_salt) for i in image.shape[:2]]
     if is_grayscale(image):  # immagine in scala di grigi
         noisy_image[coords[0], coords[1]] = 255
     else:  # immagine a colori
         noisy_image[coords[0], coords[1], :] = 255
 
-    # Aggiungi "pepe" (nero)
+    # "pepe"
     coords = [np.random.randint(0, i - 1, num_pepper) for i in image.shape[:2]]
     if is_grayscale(image):  # immagine in scala di grigi
         noisy_image[coords[0], coords[1]] = 0
@@ -601,9 +573,9 @@ def add_film_grain_noise(image, std_dev=20):
 
 
 def add_periodic_noise(image, amplitude=50, frequency=40):
-    if is_grayscale(image):  # Immagine in scala di grigi
+    if is_grayscale(image):
         images = [image]
-    else:  # immagine a colori
+    else:
         images = cv2.split(image)
 
     noisy_channels = []
@@ -611,13 +583,11 @@ def add_periodic_noise(image, amplitude=50, frequency=40):
         noisy_img = img.astype(np.float32)
         row, col = img.shape
 
-        # Crea il rumore periodico (sinusoidale) lungo la larghezza con una data frequenza
+        # rumore periodico (sinusoidale)
         periodic_noise = np.sin(np.linspace(0, 2 * np.pi * frequency, col))
 
-        # Estendi il rumore periodico lungo l'altezza dell'immagine
         periodic_noise = np.tile(periodic_noise, (row, 1))
 
-        # Aggiungi il rumore al canale dell'immagine
         noisy_img += (periodic_noise * amplitude)
         noisy_img = np.clip(noisy_img, 0, 255).astype(np.uint8)
         noisy_channels.append(noisy_img)

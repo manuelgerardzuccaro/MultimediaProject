@@ -21,9 +21,9 @@ class ImageRestorationApp(QMainWindow):
 
         self.image = None
         self.restored_image = None
-        self.applied_filters = []  # lista dei filtri applicati
-        self.undo_stack = []  # stack per undo dei filtri
-        self.redo_stack = []  # stack per redo dei filtri
+        self.applied_filters = []
+        self.undo_stack = []
+        self.redo_stack = []
 
         self.initUI()
 
@@ -212,12 +212,12 @@ class ImageRestorationApp(QMainWindow):
 
                 csv_filename = 'risultati.csv'
                 file_exists = os.path.isfile(csv_filename)
-                image_id = 1  # ID iniziale
+                image_id = 1
                 if file_exists:
                     with open(csv_filename, mode='r', newline='') as file:
                         reader = csv.reader(file)
                         next(reader)
-                        ids = [int(row[0]) for row in reader if row]  # estrazione di tutti gli ID esistenti
+                        ids = [int(row[0]) for row in reader if row]
                         if ids:
                             image_id = max(ids) + 1
 

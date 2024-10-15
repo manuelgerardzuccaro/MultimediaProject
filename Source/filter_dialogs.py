@@ -99,9 +99,9 @@ class ShockFilterDialog(QDialog):
         layout = QVBoxLayout(self)
 
         self.iterations_slider = QSlider(Qt.Horizontal)
-        self.iterations_slider.setMinimum(1)  # minimo 1 iterazione
-        self.iterations_slider.setMaximum(100)  # massimo 100 iterazioni
-        self.iterations_slider.setValue(10)  # valore iniziale
+        self.iterations_slider.setMinimum(1)
+        self.iterations_slider.setMaximum(100)
+        self.iterations_slider.setValue(10)
         self.iterations_label = QLabel(f"Iterazioni: {self.iterations_slider.value()}", self)
         self.iterations_slider.valueChanged.connect(
             lambda: self.iterations_label.setText(f"Iterazioni: {self.iterations_slider.value()}"))
@@ -137,9 +137,9 @@ class MeanFilterDialog(QDialog):
         layout = QVBoxLayout(self)
 
         self.kernel_size_slider = QSlider(Qt.Horizontal)
-        self.kernel_size_slider.setMinimum(3)  # minimo kernel 3x3
-        self.kernel_size_slider.setMaximum(15)  # massimo kernel 15x15
-        self.kernel_size_slider.setValue(3)  # valore iniziale
+        self.kernel_size_slider.setMinimum(3)
+        self.kernel_size_slider.setMaximum(15)
+        self.kernel_size_slider.setValue(3)
         self.kernel_size_label = QLabel(f"Kernel Size: {self.kernel_size_slider.value()}", self)
         self.kernel_size_slider.valueChanged.connect(
             lambda: self.kernel_size_label.setText(f"Kernel Size: {self.kernel_size_slider.value()}"))
@@ -175,9 +175,9 @@ class GeometricMeanFilterDialog(QDialog):
         layout = QVBoxLayout(self)
 
         self.kernel_size_slider = QSlider(Qt.Horizontal)
-        self.kernel_size_slider.setMinimum(3)  # minimo kernel 3x3
-        self.kernel_size_slider.setMaximum(15)  # massimo kernel 15x15
-        self.kernel_size_slider.setValue(3)  # valore iniziale
+        self.kernel_size_slider.setMinimum(3)
+        self.kernel_size_slider.setMaximum(15)
+        self.kernel_size_slider.setValue(3)
         self.kernel_size_label = QLabel(f"Kernel Size: {self.kernel_size_slider.value()}", self)
         self.kernel_size_slider.valueChanged.connect(
             lambda: self.kernel_size_label.setText(f"Kernel Size: {self.kernel_size_slider.value()}"))
@@ -209,9 +209,9 @@ class LogGeometricMeanFilterDialog(QDialog):
         layout = QVBoxLayout(self)
 
         self.kernel_size_slider = QSlider(Qt.Horizontal)
-        self.kernel_size_slider.setMinimum(3)  # minimo kernel 3x3
-        self.kernel_size_slider.setMaximum(15)  # massimo kernel 15x15
-        self.kernel_size_slider.setValue(3)  # valore iniziale
+        self.kernel_size_slider.setMinimum(3)
+        self.kernel_size_slider.setMaximum(15)
+        self.kernel_size_slider.setValue(3)
         self.kernel_size_label = QLabel(f"Kernel Size: {self.kernel_size_slider.value()}", self)
         self.kernel_size_slider.valueChanged.connect(
             lambda: self.kernel_size_label.setText(f"Kernel Size: {self.kernel_size_slider.value()}"))
