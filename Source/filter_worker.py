@@ -18,47 +18,52 @@ class FilterWorker(QThread):
 
     def run(self):
         temp_image = self.image.copy()
-        for filter_name, param in self.filters:
-            if filter_name == "Filtro Mediano":
-                temp_image = median_filter(temp_image, param)
-            elif filter_name == "Filtro MedianBlur":
-                temp_image = median_blur_filter(temp_image, param)
-            elif filter_name == "Filtro Media Aritmetica":
-                temp_image = mean_filter(temp_image, param)
-            elif filter_name == "Filtro Media Geometrica":
-                temp_image = geometric_mean_filter(temp_image, param)
-            elif filter_name == "Filtro Media Geometrica Logaritmica":
-                temp_image = log_geometric_mean_filter(temp_image, param)
-            elif filter_name == "Filtro Gaussiano":
-                temp_image = gaussian_filter(temp_image, kernel_size=param['kernel_size'], sigma=param['sigma'])
-            elif filter_name == "Filtro Contra-Harmonic Mean":
-                temp_image = contra_harmonic_mean_filter(temp_image, kernel_size=param['kernel_size'], Q=param['Q'])
-            elif filter_name == "Filtro Notch":
-                temp_image = notch_filter(temp_image, d0=param['d0'], u_k=param['u_k'], v_k=param['v_k'])
-            elif filter_name == "Filtro Shock":
-                temp_image = shock_filter(temp_image, param)
-            elif filter_name == "Filtro Homomorphic":
-                temp_image = homomorphic_filter(temp_image, low=param['low'], high=param['high'], cutoff=param['cutoff'])
-            elif filter_name == "Diffusione Anisotropica":
-                temp_image = anisotropic_diffusion(temp_image, iterations=param['iterations'], k=param['k'], gamma=param['gamma'], option=param['option'])
-            elif filter_name == "Deconvoluzione ℓ1-TV":
-                temp_image = l1_tv_deconvolution(temp_image, iterations=param['iterations'], regularization_weight=param['regularization_weight'])
-            elif filter_name == "Deconvoluzione Wiener":
-                temp_image = wiener_deconvolution(temp_image, param['kernel_size'], param['noise'])
-            elif filter_name == "Filtro Crimmins Speckle Removal":
-                temp_image = crimmins_speckle_removal(temp_image, iterations=param)
-            elif filter_name == "Rumore Gaussiano":
-                temp_image = add_gaussian_noise(temp_image)
-            elif filter_name == "Rumore Sale e Pepe":
-                temp_image = add_salt_pepper_noise(temp_image)
-            elif filter_name == "Rumore Uniforme":
-                temp_image = add_uniform_noise(temp_image)
-            elif filter_name == "Rumore Grana della Pellicola":
-                temp_image = add_film_grain_noise(temp_image)
-            elif filter_name == "Rumore Periodico":
-                temp_image = add_periodic_noise(temp_image)
 
-        if self._is_running:  # check se l'operazione è ancora valida
+        filter_functions = {
+            "Filtro Mediano": lambda img, param: median_filter(img, param),
+            "Filtro MedianBlur": lambda img, param: median_blur_filter(img, param),
+            "Filtro Media Aritmetica": lambda img, param: mean_filter(img, param),
+            "Filtro Media Geometrica": lambda img, param: geometric_mean_filter(img, param),
+            "Filtro Media Geometrica Logaritmica": lambda img, param: log_geometric_mean_filter(img, param),
+            "Filtro Gaussiano": lambda img, param: gaussian_filter(img, kernel_size=param['kernel_size'],
+                                                                   sigma=param['sigma']),
+            "Filtro Contra-Harmonic Mean": lambda img, param: contra_harmonic_mean_filter(img, kernel_size=param[
+                'kernel_size'], Q=param['Q']),
+            "Filtro Notch": lambda img, param: notch_filter(img, d0=param['d0'], u_k=param['u_k'], v_k=param['v_k']),
+            "Filtro Shock": lambda img, param: shock_filter(img, param),
+            "Filtro Homomorphic": lambda img, param: homomorphic_filter(img, low=param['low'], high=param['high'],
+                                                                        cutoff=param['cutoff']),
+            "Diffusione Anisotropica": lambda img, param: anisotropic_diffusion(img, iterations=param['iterations'],
+                                                                                k=param['k'], gamma=param['gamma'],
+                                                                                option=param['option']),
+            "Deconvoluzione ℓ1-TV": lambda img, param: l1_tv_deconvolution(img, iterations=param['iterations'],
+                                                                           regularization_weight=param[
+                                                                               'regularization_weight']),
+            "Deconvoluzione Wiener": lambda img, param: wiener_deconvolution(img, param['kernel_size'], param['noise']),
+            "Filtro Crimmins Speckle Removal": lambda img, param: crimmins_speckle_removal(img, iterations=param),
+            "Rumore Gaussiano": lambda img, _: add_gaussian_noise(img),
+            "Rumore Sale e Pepe": lambda img, _: add_salt_pepper_noise(img),
+            "Rumore Uniforme": lambda img, _: add_uniform_noise(img),
+            "Rumore Grana della Pellicola": lambda img, _: add_film_grain_noise(img),
+            "Rumore Periodico": lambda img, _: add_periodic_noise(img),
+        }
+
+        for filter_name, param in self.filters:
+            if not self._is_running:
+                break  # Esce dal loop se l'operazione non è più valida
+
+            filter_func = filter_functions.get(filter_name)
+            if filter_func:
+                try:
+                    temp_image = filter_func(temp_image, param)
+                except Exception as e:
+                    print(f"Errore durante l'applicazione del filtro '{filter_name}': {e}")
+                    continue  # Continua con il filtro successivo
+            else:
+                print(f"Filtro non riconosciuto: '{filter_name}'")
+                continue
+
+        if self._is_running:
             self.filter_applied.emit(temp_image)
 
     def stop(self):
