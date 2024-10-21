@@ -1,12 +1,34 @@
-# MultimediaProject
-Il restauro di immagini digitali è fondamentale in numerosi settori, tra cui la medicina diagnostica, la videosorveglianza e la conservazione di archivi storici. Le immagini possono essere compromesse da vari tipi di rumore, come quello gaussiano, sale e pepe o periodico, che ne degradano la qualità e l'utilità. Nonostante i progressi nelle tecniche di acquisizione e trasmissione, il rumore rimane una sfida significativa che può ostacolare l'analisi e l'interpretazione delle immagini.
-Questo progetto mira a sviluppare un sistema software che permetta agli utenti di migliorare la qualità visiva di immagini degradate attraverso l'applicazione di filtri e tecniche di deconvoluzione. Sono state selezionate quattro immagini, sia a colori che in scala di grigi, sulle quali sono stati applicati tre tipi distinti di rumore. Successivamente, diversi algoritmi di filtraggio sono stati utilizzati per il restauro, con l'obiettivo di valutare l'efficacia di ciascun filtro in relazione al tipo di rumore presente.
-Gli obiettivi principali di questo lavoro sono:
-	Implementare un'interfaccia utente intuitiva per facilitare l'applicazione dei filtri;
-	Automatizzare la raccolta dei dati dei risultati in file CSV per un'analisi approfondita;
-	Valutare se i filtri utilizzati per il restauro migliorano effettivamente la qualità delle immagini affette da rumore rispetto alle originali, utilizzando metriche quantitative.
-La struttura modulare del programma consente una facile estensione con nuovi filtri e funzionalità. L'interfaccia grafica sviluppata con PyQt5 garantisce un'esperienza utente intuitiva, permettendo una gestione efficiente delle operazioni di restauro.
-Nel corso della relazione verranno descritti in dettaglio la metodologia adottata, i risultati ottenuti e un'analisi critica delle prestazioni dei filtri. Infine, saranno discusse le possibili direzioni future, tra cui:
-	l'integrazione di tecniche avanzate di deep learning, come le Reti Neurali Convoluzionali (CNN) e le Generative Adversarial Networks (GAN); 
-	l'ottimizzazione delle prestazioni attraverso l'elaborazione parallela su GPU;
-che potranno rendere il sistema più efficiente e adatto a contesti applicativi complessi.
+# Digital Image Restoration Project
+
+## Introduction
+
+Digital image restoration is crucial in various fields, including diagnostic medicine, video surveillance, and the preservation of historical archives. Images can be degraded by several types of noise, such as Gaussian, salt-and-pepper, or periodic noise, which reduce their quality and utility. Despite advancements in acquisition and transmission techniques, noise remains a significant challenge that can hinder the analysis and interpretation of images.
+
+This project aims to develop a software system that allows users to improve the visual quality of degraded images through the application of filters and deconvolution techniques. Four images, both in color and grayscale, were selected, and three distinct types of noise were applied. Various filtering algorithms were then used for restoration, with the goal of evaluating the effectiveness of each filter based on the type of noise present.
+
+## Key Objectives
+
+The main goals of this project are:
+
+- Implementing an intuitive user interface to facilitate the application of filters.
+- Automating the collection of result data in CSV files for in-depth analysis.
+- Evaluating whether the applied filters improve the quality of noisy images compared to the originals using quantitative metrics.
+
+## Features
+
+The software is designed with a modular structure, allowing for easy extension with new filters and functionalities. The graphical user interface (GUI), developed with PyQt5, ensures an intuitive user experience, enabling efficient management of the restoration process.
+
+## Future Directions
+
+The project also considers future developments, including:
+
+- Integration of advanced deep learning techniques, such as Convolutional Neural Networks (CNNs) and Generative Adversarial Networks (GANs).
+- Performance optimization through parallel processing on GPUs.
+
+These advancements will make the system more efficient and suitable for more complex applications.
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/digital-image-restoration.git
