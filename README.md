@@ -31,4 +31,4 @@ These advancements will make the system more efficient and suitable for more com
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/digital-image-restoration.git
+   git clone https://github.com/manuelgerardzuccaro/MultimediaProject.git
